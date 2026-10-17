@@ -26,7 +26,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.deps import validate_file_content
-from app.config import settings
 from app.db.models import Feedback, Report
 from app.db.session import get_db
 from app.schemas.analysis import AnalysisResult
@@ -39,8 +38,7 @@ from app.schemas.report import (
     ReportStatusResponse,
     SubmitReportResponse,
 )
-from app.services.nlp.biomedical_ner import run_ner_pipeline
-from app.services.pipeline.mock_pipeline import run_mock_pipeline
+from app.services.nlp.biomedical_ner import run_report_pipeline
 
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
@@ -60,18 +58,17 @@ async def submit_report(
     content = await file.read()
     filename = file.filename or "report.txt"
     report_type = validate_file_content(filename, file.content_type, content)
-    report_text: str | None = None
+    report_text: str
 
-    if settings.pipeline_mode == "ner":
-        if not filename.lower().endswith(".txt"):
-            raise HTTPException(
-                status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-                detail="The biomedical entity-extraction pipeline currently supports TXT files only.",
-            )
-        try:
-            report_text = content.decode("utf-8")
-        except UnicodeDecodeError:
-            report_text = content.decode("latin-1")
+    if not filename.lower().endswith(".txt"):
+        raise HTTPException(
+            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
+            detail="Report analysis currently supports TXT files only.",
+        )
+    try:
+        report_text = content.decode("utf-8")
+    except UnicodeDecodeError:
+        report_text = content.decode("latin-1")
 
     # Note: File content is NEVER saved to disk or DB per privacy rule in section 9.
     report = Report(
@@ -84,15 +81,12 @@ async def submit_report(
     await db.commit()
     await db.refresh(report)
 
-    if settings.pipeline_mode == "ner":
-        background_tasks.add_task(
-            run_ner_pipeline,
-            report.id,
-            report_type,
-            report_text or "",
-        )
-    else:
-        background_tasks.add_task(run_mock_pipeline, report.id)
+    background_tasks.add_task(
+        run_report_pipeline,
+        report.id,
+        report_type,
+        report_text,
+    )
 
     return SubmitReportResponse(
         report_id=UUID(report.id),

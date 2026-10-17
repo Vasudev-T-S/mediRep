@@ -189,7 +189,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 <span>Key Lab Findings ({result.key_findings.length})</span>
               </h3>
               <p className="text-xs text-[#a8b2c1]">
-                Extracted measurements compared against standard reference ranges.
+                Values are compared with reference ranges printed in your report.
               </p>
             </div>
 

@@ -11,7 +11,7 @@ interface ProgressCardProps {
 const STAGES: { stage: ReportStage; label: string }[] = [
   { stage: "uploaded", label: "Text report received" },
   { stage: "extracting_text", label: "Preparing report text" },
-  { stage: "detecting_findings", label: "Detecting possible medical entities" },
+  { stage: "detecting_findings", label: "Reviewing values and reference ranges" },
   { stage: "done", label: "Analysis Ready" },
 ];
 
@@ -37,8 +37,8 @@ export const ProgressCard: React.FC<ProgressCardProps> = ({
               <Sparkles className="w-5 h-5 text-[#FE9458] animate-spin" style={{ animationDuration: "4s" }} />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">Extracting Medical Entities...</h2>
-              <p className="text-xs text-[#a8b2c1]">This identifies terms; it does not interpret results.</p>
+              <h2 className="text-xl font-bold text-white">Analyzing your report...</h2>
+              <p className="text-xs text-[#a8b2c1]">Preparing a plain-language summary from the text you provided.</p>
             </div>
           </div>
           <span className="text-xl font-extrabold text-[#FE9458]">{progressPct}%</span>

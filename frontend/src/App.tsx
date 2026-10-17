@@ -83,33 +83,6 @@ export default function App() {
     }
   };
 
-  const handleLoadSample = async () => {
-    setIsSubmitting(true);
-    setError(null);
-    try {
-      const sampleText = `COMPLETE BLOOD COUNT (CBC) LAB REPORT
-Patient: John Doe
-Date: Oct 09, 2026
-
-TEST PARAMETERS:
-Hemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL) - LOW
-White Blood Cells (WBC): 6.5 x10^3/uL (Reference Range: 4.5 - 11.0 x10^3/uL) - NORMAL
-Platelet Count: 250 x10^3/uL (Reference Range: 150 - 450 x10^3/uL) - NORMAL
-Fasting Glucose: 108 mg/dL (Reference Range: 70 - 99 mg/dL) - HIGH
-`;
-      const sampleFile = new File([sampleText], "sample_cbc_report.txt", {
-        type: "text/plain",
-      });
-      const resp = await submitReport(sampleFile);
-      setViewMode("progress");
-      startPollingStatus(resp.report_id);
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to load sample report.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
   const handleReset = () => {
     if (pollIntervalRef.current) window.clearInterval(pollIntervalRef.current);
     setStatusData(null);
@@ -136,7 +109,6 @@ Fasting Glucose: 108 mg/dL (Reference Range: 70 - 99 mg/dL) - HIGH
         {viewMode === "upload" && (
           <UploadCard
             onFileSelected={handleFileSelected}
-            onLoadSample={handleLoadSample}
             isSubmitting={isSubmitting}
             error={error}
           />

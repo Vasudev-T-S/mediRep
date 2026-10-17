@@ -1,24 +1,23 @@
-"""Local biomedical named-entity recognition using the Kaggle notebook's model."""
+"""Conservative plain-text report analysis using report-provided reference ranges."""
 
 from __future__ import annotations
 
 import asyncio
 import logging
+import re
 import time
 from datetime import UTC, datetime
-from functools import lru_cache
-from typing import Any
 from uuid import UUID
 
 from sqlalchemy import select
 
-from app.config import settings
 from app.db.models import Report
 from app.db.session import AsyncSessionLocal
 from app.schemas.analysis import (
     AnalysisMode,
     AnalysisResult,
-    DetectedEntity,
+    Finding,
+    FindingStatus,
     Lifestyle,
     Meta,
     RedFlag,
@@ -29,80 +28,100 @@ from app.schemas.report import ReportStage, ReportStatus
 logger = logging.getLogger(__name__)
 
 
-@lru_cache(maxsize=1)
-def _load_pipeline() -> Any:
-    """Load and cache the Hugging Face pipeline on the backend host."""
-    import torch
-    from transformers import pipeline
-
-    device = 0 if torch.cuda.is_available() else -1
-    return pipeline(
-        "token-classification",
-        model=settings.ner_model_name,
-        aggregation_strategy="simple",
-        device=device,
-    )
+VALUE_LINE = re.compile(
+    r"^\s*(?P<name>[A-Za-z][A-Za-z0-9 /().,_-]{1,70}?)\s*:\s*"
+    r"(?P<value>[+-]?\d+(?:\.\d+)?)\s*(?P<unit>[^\s(),;:]*)?(?P<tail>.*)$"
+)
+RANGE = re.compile(
+    r"(?:reference\s*(?:range)?|normal\s*range|ref\.?\s*range|range)"
+    r"\s*[:=]?\s*\(?\s*([+-]?\d+(?:\.\d+)?)\s*-\s*"
+    r"([+-]?\d+(?:\.\d+)?)", re.IGNORECASE
+)
 
 
-def extract_entities(text: str) -> list[DetectedEntity]:
-    """Run local inference and normalize Hugging Face token-classification output."""
-    predictions = _load_pipeline()(text, stride=64, truncation=True)
-    entities: list[DetectedEntity] = []
-
-    for prediction in predictions:
-        entity_text = str(prediction.get("word", "")).strip()
-        if not entity_text:
+def analyze_report_text(text: str) -> list[Finding]:
+    """Read numeric lab rows and compare only with ranges printed in the report."""
+    findings: list[Finding] = []
+    seen: set[tuple[str, float]] = set()
+    for line in text.splitlines():
+        match = VALUE_LINE.match(line)
+        if not match:
             continue
-
-        label = prediction.get("entity_group", prediction.get("entity", "UNKNOWN"))
-        start = prediction.get("start")
-        end = prediction.get("end")
-        entities.append(
-            DetectedEntity(
-                text=entity_text,
-                label=str(label),
-                confidence=float(prediction["score"]),
-                start=int(start) if start is not None else None,
-                end=int(end) if end is not None else None,
+        name = match.group("name").strip(" .:-")
+        value = float(match.group("value"))
+        key = (name.casefold(), value)
+        if key in seen:
+            continue
+        seen.add(key)
+        unit = (match.group("unit") or "").strip() or None
+        range_match = RANGE.search(match.group("tail"))
+        low = float(range_match.group(1)) if range_match else None
+        high = float(range_match.group(2)) if range_match else None
+        if low is None or high is None:
+            status, reference_range = FindingStatus.unknown, None
+            explanation = (
+                "A value was found, but this line does not include a clearly stated reference range, "
+                "so it cannot be classified here."
             )
-        )
+        else:
+            status = FindingStatus.low if value < low else (
+                FindingStatus.high if value > high else FindingStatus.normal
+            )
+            reference_range = f"{low:g}-{high:g}" + (f" {unit}" if unit else "")
+            relation = {FindingStatus.low: "below", FindingStatus.normal: "within", FindingStatus.high: "above"}[status]
+            explanation = f"{value:g} is {relation} the reference range shown on your report ({reference_range})."
+        findings.append(Finding(
+            name=name, value=value, unit=unit, reference_range=reference_range,
+            status=status, explanation=explanation,
+        ))
+    return findings
 
-    return entities
 
-
-def build_entity_result(
+def build_report_result(
     report_id: str,
     report_type: str,
-    entities: list[DetectedEntity],
+    findings: list[Finding],
     processing_seconds: float,
 ) -> AnalysisResult:
-    """Build an honest entity-only result without inventing clinical advice."""
-    count = len(entities)
-    summary = (
-        f"The model detected {count} possible medical "
-        f"{'entity' if count == 1 else 'entities'}. "
-        "This is entity extraction only; it does not interpret results or provide medical advice."
-    )
+    """Build a report-based result without inventing clinical advice."""
+    count = len(findings)
+    if not count:
+        summary = "No numeric result lines could be reliably read from this text. Check that each test, value, and reference range is on a clear line."
+    else:
+        comparable = [f for f in findings if f.status != FindingStatus.unknown]
+        if not comparable:
+            summary = (
+                f"I found {count} numeric result{'s' if count != 1 else ''}, but the text did not provide "
+                "clear reference ranges for comparison. Check the details below against the original report."
+            )
+        else:
+            out_of_range = sum(f.status in (FindingStatus.low, FindingStatus.high) for f in comparable)
+            summary = (
+                f"I found {count} numeric result{'s' if count != 1 else ''}. "
+                f"Of the {len(comparable)} that could be compared with report-provided ranges, "
+                f"{out_of_range} {'were' if out_of_range != 1 else 'was'} outside the range. "
+                "These comparisons are informational and are not a diagnosis."
+            )
 
     return AnalysisResult(
         report_id=UUID(report_id),
         report_type=ReportType(report_type),
-        analysis_mode=AnalysisMode.entity_extraction,
+        analysis_mode=AnalysisMode.report_analysis,
         overall_summary=summary,
         red_flag=RedFlag(triggered=False, message=None),
-        key_findings=[],
+        key_findings=findings,
         medical_terms=[],
-        detected_entities=entities,
+        detected_entities=[],
         lifestyle=Lifestyle(),
         questions_for_doctor=[],
         disclaimer=(
-            "Entity extraction only — not a diagnosis or medical advice. "
-            "Model detections may be incorrect or incomplete. Please consult a qualified "
-            "healthcare professional about your report."
+            "This automated summary compares numeric values only with reference ranges included in your report. "
+            "It may miss or misread results and is not a diagnosis or medical advice. Please discuss your report "
+            "with a qualified healthcare professional."
         ),
         meta=Meta(
-            model=settings.ner_model_name,
-            pipeline_version="0.2.0",
+            model="report-text-parser",
+            pipeline_version="0.3.0",
             processing_seconds=max(0.0, processing_seconds),
             readability_grade=None,
             warnings=[],
@@ -129,7 +148,7 @@ async def _update_report(
         return True
 
 
-async def run_ner_pipeline(report_id: str, report_type: str, text: str) -> None:
+async def run_report_pipeline(report_id: str, report_type: str, text: str) -> None:
     """Analyze text in the background without persisting the uploaded report text."""
     started_at = time.perf_counter()
     try:
@@ -143,11 +162,11 @@ async def run_ner_pipeline(report_id: str, report_type: str, text: str) -> None:
             stage=ReportStage.detecting_findings,
             progress=0.6,
         )
-        entities = await asyncio.to_thread(extract_entities, text)
-        result = build_entity_result(
+        findings = await asyncio.to_thread(analyze_report_text, text)
+        result = build_report_result(
             report_id,
             report_type,
-            entities,
+            findings,
             time.perf_counter() - started_at,
         )
         async with AsyncSessionLocal() as db:
@@ -161,13 +180,13 @@ async def run_ner_pipeline(report_id: str, report_type: str, text: str) -> None:
             record.completed_at = datetime.now(UTC)
             await db.commit()
     except Exception as exc:
-        logger.exception("Biomedical NER failed for report %s", report_id)
+        logger.exception("Report analysis failed for report %s", report_id)
         async with AsyncSessionLocal() as db:
             record = await db.get(Report, report_id)
             if record is not None:
                 record.status = ReportStatus.failed.value
                 record.error_message = (
-                    f"Entity extraction failed ({type(exc).__name__}). "
+                    f"Report analysis failed ({type(exc).__name__}). "
                     "Check the backend logs for details."
                 )
                 await db.commit()

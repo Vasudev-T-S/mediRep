@@ -1,16 +1,14 @@
 import React, { useState, useRef } from "react";
-import { X, FileText, Sparkles, AlertCircle, HelpCircle, CheckCircle2 } from "lucide-react";
+import { X, FileText, AlertCircle, HelpCircle, CheckCircle2 } from "lucide-react";
 
 interface UploadCardProps {
   onFileSelected: (file: File) => void;
-  onLoadSample: () => void;
   isSubmitting: boolean;
   error?: string | null;
 }
 
 export const UploadCard: React.FC<UploadCardProps> = ({
   onFileSelected,
-  onLoadSample,
   isSubmitting,
   error,
 }) => {
@@ -107,18 +105,9 @@ export const UploadCard: React.FC<UploadCardProps> = ({
               Upload your report
             </h2>
             <p className="text-xs text-[#a8b2c1] mt-1">
-              Upload a plain-text medical report for entity extraction.
+              Upload a plain-text medical report for a plain-language summary.
             </p>
           </div>
-          <button
-            onClick={onLoadSample}
-            type="button"
-            className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-full bg-[#FE9458]/15 text-[#FE9458] border border-[#FE9458]/30 hover:bg-[#FE9458]/25 transition-all duration-200 cursor-pointer shadow-[0_0_12px_rgba(254,148,88,0.2)]"
-            title="Try with sample CBC blood report data"
-          >
-            <Sparkles className="w-3.5 h-3.5" />
-            <span>Load Sample Report</span>
-          </button>
         </div>
 
         {/* Dropzone Area */}

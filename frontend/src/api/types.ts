@@ -105,7 +105,7 @@ export interface Meta {
 export interface AnalysisResult {
   report_id: string; // UUID string
   report_type: ReportType;
-  analysis_mode: "mock" | "entity_extraction";
+  analysis_mode: "mock" | "entity_extraction" | "report_analysis";
   /** Plain-language summary at ~6th-8th grade reading level */
   overall_summary: string;
   red_flag: RedFlag;

@@ -44,6 +44,7 @@ class AnalysisMode(str, Enum):
 
     mock = "mock"
     entity_extraction = "entity_extraction"
+    report_analysis = "report_analysis"
 
 
 # ── Sub-models ────────────────────────────────────────────────────────────────
