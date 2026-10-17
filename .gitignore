@@ -1,0 +1,33 @@
+﻿# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+*.egg-info/
+dist/
+build/
+.pytest_cache/
+.ruff_cache/
+medirep.db
+*.db-journal
+
+# Environment
+.env
+!.env.example
+
+# Frontend
+node_modules/
+frontend/dist/
+frontend/.env
+
+# FAISS / KB index (large binary — rebuild from source docs)
+backend/kb/*.index
+backend/kb/*.faiss
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
