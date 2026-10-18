@@ -43,7 +43,7 @@ def analyze_report_text(text: str) -> list[Finding]:
     """Read numeric lab rows and compare only with ranges printed in the report."""
     findings: list[Finding] = []
     seen: set[tuple[str, float]] = set()
-    for line in text.splitlines():
+    for line in text.lstrip("\ufeff").splitlines():
         match = VALUE_LINE.match(line)
         if not match:
             continue

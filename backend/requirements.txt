@@ -26,6 +26,3 @@ httpx==0.27.2                 # used by TestClient
 ruff==0.6.9
 
 # ── Biomedical named-entity recognition ─────────────────────────────────────
-numpy==2.2.6
-torch==2.7.1
-transformers==4.52.4

@@ -8,8 +8,6 @@ import uuid
 import pytest
 from fastapi.testclient import TestClient
 
-from app.config import settings
-from app.schemas.analysis import DetectedEntity
 from app.services.nlp import biomedical_ner
 
 
@@ -27,7 +25,11 @@ def test_submit_valid_txt_report(client: TestClient) -> None:
 
 def test_full_pipeline_flow(client: TestClient) -> None:
     """Submit report -> poll status until completed -> fetch result -> verify schema -> submit feedback -> delete report."""
-    file_content = b"Patient Lab Summary\nHemoglobin 11.2 g/dL\nGlucose 108 mg/dL"
+    file_content = (
+        b"Patient Lab Summary\n"
+        b"Hemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL)\n"
+        b"Glucose: 108 mg/dL (Reference Range: 70 - 99 mg/dL)"
+    )
     files = {"file": ("lab_report.txt", file_content, "text/plain")}
 
     # 1. Submit
@@ -57,9 +59,10 @@ def test_full_pipeline_flow(client: TestClient) -> None:
     res_data = result_res.json()
     assert res_data["report_id"] == report_id
     assert res_data["report_type"] == "lab"
-    assert res_data["analysis_mode"] == "mock"
+    assert res_data["analysis_mode"] == "report_analysis"
     assert "overall_summary" in res_data
-    assert len(res_data["key_findings"]) > 0
+    assert len(res_data["key_findings"]) == 2
+    assert [finding["status"] for finding in res_data["key_findings"]] == ["low", "high"]
     assert "disclaimer" in res_data
     assert "meta" in res_data
 
@@ -97,28 +100,9 @@ def test_submit_invalid_extension_fails(client: TestClient) -> None:
     assert "Unsupported file extension" in res.json()["detail"]
 
 
-def test_ner_pipeline_returns_entities_from_uploaded_text(
-    client: TestClient,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    """NER mode uses the uploaded text and returns entity-only results."""
-    monkeypatch.setattr(settings, "pipeline_mode", "ner")
-    received_text: list[str] = []
-
-    def fake_extract_entities(text: str) -> list[DetectedEntity]:
-        received_text.append(text)
-        return [
-            DetectedEntity(
-                text="synovitis",
-                label="DISEASE",
-                confidence=0.98,
-                start=11,
-                end=20,
-            )
-        ]
-
-    monkeypatch.setattr(biomedical_ner, "extract_entities", fake_extract_entities)
-    report_text = "Diagnosis: synovitis of the knee."
+def test_uploaded_report_is_analyzed_using_its_own_values(client: TestClient) -> None:
+    """Analysis compares uploaded measurements only to ranges stated in that report."""
+    report_text = "Hemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL)"
     response = client.post(
         "/api/reports",
         files={"file": ("report.txt", report_text.encode(), "text/plain")},
@@ -128,18 +112,11 @@ def test_ner_pipeline_returns_entities_from_uploaded_text(
     result = client.get(f"/api/reports/{response.json()['report_id']}/result")
     assert result.status_code == 200
     data = result.json()
-    assert received_text == [report_text]
-    assert data["analysis_mode"] == "entity_extraction"
-    assert data["detected_entities"] == [
-        {
-            "text": "synovitis",
-            "label": "DISEASE",
-            "confidence": 0.98,
-            "start": 11,
-            "end": 20,
-        }
-    ]
-    assert data["key_findings"] == []
+    assert data["analysis_mode"] == "report_analysis"
+    assert data["detected_entities"] == []
+    assert data["key_findings"][0]["name"] == "Hemoglobin"
+    assert data["key_findings"][0]["status"] == "low"
+    assert "below the reference range" in data["key_findings"][0]["explanation"]
     assert data["lifestyle"] == {
         "diet": [],
         "physical_activity": [],
@@ -148,11 +125,7 @@ def test_ner_pipeline_returns_entities_from_uploaded_text(
     }
 
 
-def test_ner_pipeline_rejects_non_text_uploads(
-    client: TestClient,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(settings, "pipeline_mode", "ner")
+def test_report_pipeline_rejects_non_text_uploads(client: TestClient) -> None:
     response = client.post(
         "/api/reports",
         files={"file": ("report.pdf", b"%PDF-1.4", "application/pdf")},
@@ -160,26 +133,20 @@ def test_ner_pipeline_rejects_non_text_uploads(
     assert response.status_code == 415
 
 
-def test_ner_pipeline_reports_model_failures(
-    client: TestClient,
-    monkeypatch: pytest.MonkeyPatch,
-) -> None:
-    monkeypatch.setattr(settings, "pipeline_mode", "ner")
+def test_report_without_range_is_not_misclassified() -> None:
+    findings = biomedical_ner.analyze_report_text("Hemoglobin: 11.2 g/dL")
+    assert len(findings) == 1
+    assert findings[0].status.value == "unknown"
+    assert findings[0].reference_range is None
 
-    def fail_inference(_text: str) -> list[DetectedEntity]:
-        raise RuntimeError("model is unavailable")
 
-    monkeypatch.setattr(biomedical_ner, "extract_entities", fail_inference)
-    response = client.post(
-        "/api/reports",
-        files={"file": ("report.txt", b"medical report", "text/plain")},
+def test_report_with_utf8_bom_keeps_first_result() -> None:
+    findings = biomedical_ner.analyze_report_text(
+        "\ufeffHemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL)"
     )
-
-    assert response.status_code == 202
-    report_id = response.json()["report_id"]
-    status_response = client.get(f"/api/reports/{report_id}/status")
-    assert status_response.json()["status"] == "failed"
-    assert "RuntimeError" in status_response.json()["error_message"]
+    assert len(findings) == 1
+    assert findings[0].name == "Hemoglobin"
+    assert findings[0].status.value == "low"
 
 
 def test_get_nonexistent_report_status_404(client: TestClient) -> None:
