@@ -2,6 +2,9 @@
 fastapi==0.115.0
 uvicorn[standard]==0.30.6
 python-multipart==0.0.12      # multipart/form-data uploads
+PyMuPDF==1.24.14              # PDF text extraction and rendering
+Pillow==11.0.0                # image decoding for OCR
+pytesseract==0.3.13           # OCR interface (Tesseract binary must be installed separately)
 
 # ── Settings & validation ─────────────────────────────────────────────────────
 pydantic==2.9.2

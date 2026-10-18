@@ -30,11 +30,11 @@ export const UploadCard: React.FC<UploadCardProps> = ({
 
   const processFile = (file: File) => {
     setFileError(null);
-    const validExtensions = [".txt"];
+    const validExtensions = [".txt", ".pdf", ".png", ".jpg", ".jpeg"];
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
     
     if (!validExtensions.includes(ext)) {
-      setFileError("The biomedical entity extractor currently supports TXT files only.");
+      setFileError("Choose a PDF, PNG, JPG, or TXT report.");
       return;
     }
 
@@ -105,7 +105,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
               Upload your report
             </h2>
             <p className="text-xs text-[#a8b2c1] mt-1">
-              Upload a plain-text medical report for a plain-language summary.
+              Upload a medical report for a plain-language summary.
             </p>
           </div>
         </div>
@@ -124,7 +124,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
           <input
             ref={inputRef}
             type="file"
-            accept=".txt"
+            accept=".txt,.pdf,.png,.jpg,.jpeg"
             onChange={handleChange}
             className="hidden"
           />
@@ -176,7 +176,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
               to upload.
             </p>
             <p className="text-xs text-[#738094]">
-              Supported format: <span className="text-[#a8b2c1]">TXT</span>. Max 10.0MB
+              Supported formats: <span className="text-[#a8b2c1]">PDF, PNG, JPG, TXT</span>. Max 10.0MB
             </p>
           </div>
         </div>

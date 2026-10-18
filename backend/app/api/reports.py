@@ -11,6 +11,8 @@ Endpoints:
 from __future__ import annotations
 
 import json
+import io
+import re
 from uuid import UUID
 
 from fastapi import (
@@ -43,6 +45,40 @@ from app.services.nlp.biomedical_ner import run_report_pipeline
 router = APIRouter(prefix="/api/reports", tags=["reports"])
 
 
+def extract_report_text(filename: str, content: bytes) -> str:
+    """Extract text from supported report formats; never guess missing content."""
+    ext = filename.lower().rsplit(".", 1)[-1] if "." in filename else ""
+    if ext == "txt":
+        return content.decode("utf-8", errors="replace")
+
+    try:
+        if ext == "pdf":
+            import fitz
+            document = fitz.open(stream=content, filetype="pdf")
+            pages = [page.get_text() for page in document]
+            # Scanned PDFs need OCR; render pages and use the same OCR path as photos.
+            if len(re.sub(r"[^A-Za-z0-9]", "", "\n".join(pages))) < 12:
+                from PIL import Image
+                import pytesseract
+                pages = [pytesseract.image_to_string(
+                    Image.open(io.BytesIO(page.get_pixmap(dpi=200).tobytes("png")))
+                ) for page in document]
+            return "\n".join(pages)
+        from PIL import Image
+        import pytesseract
+        return pytesseract.image_to_string(Image.open(io.BytesIO(content)))
+    except ImportError as exc:
+        raise HTTPException(
+            status_code=503,
+            detail="PDF and image reading needs OCR support. Install backend requirements and Tesseract OCR, then try again.",
+        ) from exc
+    except Exception as exc:
+        raise HTTPException(
+            status_code=422,
+            detail="We couldn't read this file. Please upload a clear, straight-on photo or a readable PDF.",
+        ) from exc
+
+
 @router.post(
     "",
     response_model=SubmitReportResponse,
@@ -58,17 +94,13 @@ async def submit_report(
     content = await file.read()
     filename = file.filename or "report.txt"
     report_type = validate_file_content(filename, file.content_type, content)
-    report_text: str
-
-    if not filename.lower().endswith(".txt"):
+    report_text = extract_report_text(filename, content)
+    readable = re.sub(r"[^A-Za-z0-9]", "", report_text)
+    if len(readable) < 12:
         raise HTTPException(
-            status_code=status.HTTP_415_UNSUPPORTED_MEDIA_TYPE,
-            detail="Report analysis currently supports TXT files only.",
+            status_code=422,
+            detail="We couldn't clearly read text from this report. Please upload a clearer picture or a readable PDF. We won't guess the results.",
         )
-    try:
-        report_text = content.decode("utf-8")
-    except UnicodeDecodeError:
-        report_text = content.decode("latin-1")
 
     # Note: File content is NEVER saved to disk or DB per privacy rule in section 9.
     report = Report(

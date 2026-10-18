@@ -86,7 +86,7 @@ def build_report_result(
     """Build a report-based result without inventing clinical advice."""
     count = len(findings)
     if not count:
-        summary = "No numeric result lines could be reliably read from this text. Check that each test, value, and reference range is on a clear line."
+        summary = "No numeric result lines could be reliably read. Please upload a clearer picture or a readable PDF; results are not guessed."
     else:
         comparable = [f for f in findings if f.status != FindingStatus.unknown]
         if not comparable:

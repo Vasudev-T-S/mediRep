@@ -55,7 +55,7 @@ Open `http://127.0.0.1:5173` in your browser. Keep both windows open while using
 
 ### Upload format
 
-The current analyzer accepts `.txt` files up to 10 MB. It summarizes numeric rows formatted like `Hemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL)`. It compares values only against ranges present in the uploaded report; it does not interpret narrative text, diagnose, or replace a clinician's advice. The backend processes report text in memory and does not save the uploaded text.
+The analyzer accepts `.txt`, `.pdf`, `.png`, `.jpg`, and `.jpeg` files up to 10 MB. It extracts PDF text and uses Tesseract OCR for scanned PDFs and images; install the Tesseract OCR application separately and make sure it is on PATH. It summarizes numeric rows formatted like `Hemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL)`. If text cannot be read, it asks for a clearer image or readable PDF instead of guessing. It compares values only against ranges present in the uploaded report; it does not diagnose or replace a clinician's advice. The backend processes report text in memory and does not save the uploaded text.
 ## Architecture
 See `CONTEXT.md` section 4 for the full pipeline diagram.
 
