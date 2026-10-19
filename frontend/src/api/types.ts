@@ -114,6 +114,7 @@ export interface AnalysisResult {
   detected_entities: DetectedEntity[];
   lifestyle: Lifestyle;
   questions_for_doctor: string[];
+  extracted_text?: string | null;
   /** Persistent safety disclaimer shown on every results page. */
   disclaimer: string;
   meta: Meta;
@@ -168,4 +169,13 @@ export interface HealthResponse {
   status: "ok";
   version: string;
   env: string;
+}
+
+export interface SampleReport {
+  id: string;
+  title: string;
+  category: string;
+  badge: string;
+  description: string;
+  text: string;
 }

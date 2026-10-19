@@ -12,6 +12,7 @@ import type {
   FeedbackResponse,
   HealthResponse,
   ReportStatusResponse,
+  SampleReport,
   SubmitReportResponse,
 } from "./types";
 
@@ -68,3 +69,6 @@ export const submitFeedback = (
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+
+export const getSampleReports = (): Promise<SampleReport[]> =>
+  request<SampleReport[]>("/api/reports/samples");

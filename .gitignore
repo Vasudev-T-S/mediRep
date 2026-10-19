@@ -1,4 +1,4 @@
-﻿# Python
+# Python
 __pycache__/
 *.py[cod]
 *.pyo
@@ -31,3 +31,7 @@ Thumbs.db
 # IDE
 .vscode/
 .idea/
+
+# Evaluation data downloads
+eval/data/raw/
+eval/data/*.tgz

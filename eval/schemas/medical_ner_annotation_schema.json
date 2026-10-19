@@ -1,0 +1,22 @@
+{
+  "schema_version": "1.0",
+  "project": "Medical Report Analyzer",
+  "labels": {
+    "DISEASE": "Diseases and disorders",
+    "SYMPTOM": "Symptoms and clinical findings",
+    "MEDICATION": "Medication names",
+    "ANATOMY": "Body parts and anatomical structures",
+    "TEST": "Diagnostic tests and investigations",
+    "PROCEDURE": "Surgical and therapeutic procedures",
+    "PATHOGEN": "Infectious organisms",
+    "RADIOLOGICAL_FINDING": "Findings described by medical imaging"
+  },
+  "annotation_rules": [
+    "Annotate only information supported by the report text.",
+    "Use complete entity spans consistently.",
+    "Do not infer a diagnosis from a symptom alone.",
+    "Do not reconstruct text hidden by XXXX placeholders.",
+    "Distinguish radiological findings from confirmed diseases.",
+    "Keep uncertain annotations pending manual review."
+  ]
+}

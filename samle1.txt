@@ -1,0 +1,22 @@
+PATIENT COMPREHENSIVE MEDICAL & LAB REPORT
+Patient Name: Jane Doe | Age: 42 | Gender: Female
+Date of Collection: 2026-10-18
+
+CLINICAL NOTES & HISTORY:
+Patient presents with complaints of persistent left knee pain, generalized fatigue, and occasional fevers. 
+Past medical history includes mild hypertension and chronic pain. Currently managed with ibuprofen 400mg as needed. 
+Physical examination reveals mild tenderness and joint effusion in the left knee, suspicious for synovitis.
+
+COMPLETE BLOOD COUNT (CBC) & METABOLIC PANEL:
+Hemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL)
+WBC: 6.8 K/uL (Reference Range: 4.5 - 11.0 K/uL)
+Platelets: 250 K/uL (Reference Range: 150 - 450 K/uL)
+Fasting Glucose: 108 mg/dL (Reference Range: 70 - 99 mg/dL)
+Creatinine: 0.9 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)
+Potassium: 4.2 mmol/L (Reference Range: 3.5 - 5.0 mmol/L)
+Total Cholesterol: 215 mg/dL (Reference Range: 125 - 200 mg/dL)
+
+IMPRESSION:
+1. Mild microcytic anemia indicated by low hemoglobin.
+2. Borderline fasting hyperglycemia.
+3. Left knee synovitis with localized joint discomfort.

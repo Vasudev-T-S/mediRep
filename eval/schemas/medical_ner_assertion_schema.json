@@ -1,0 +1,19 @@
+{
+  "schema_version": "1.0",
+  "project": "Medical Report Analyzer",
+  "assertion_statuses": {
+    "PRESENT": "The report explicitly describes the entity or finding as present.",
+    "ABSENT": "The report explicitly negates the entity or finding.",
+    "UNCERTAIN": "The report expresses uncertainty or describes a possible finding.",
+    "HISTORICAL": "The report describes a past condition or finding.",
+    "NOT_SPECIFIED": "The entity is mentioned, but its assertion status is not clear."
+  },
+  "annotation_rules": [
+    "Record entity category separately from assertion status.",
+    "Do not interpret a mentioned entity as automatically present.",
+    "Preserve explicit negation from the source report.",
+    "Preserve uncertainty expressed in the source report.",
+    "Do not infer assertion status from the entity category alone.",
+    "Do not reconstruct text masked by XXXX."
+  ]
+}

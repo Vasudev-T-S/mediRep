@@ -1,5 +1,15 @@
-import React, { useState, useRef } from "react";
-import { X, FileText, AlertCircle, HelpCircle, CheckCircle2 } from "lucide-react";
+import React, { useState, useRef, useEffect } from "react";
+import {
+  X,
+  FileText,
+  AlertCircle,
+  HelpCircle,
+  CheckCircle2,
+  Sparkles,
+  ArrowRight,
+} from "lucide-react";
+import { getSampleReports } from "../api/client";
+import type { SampleReport } from "../api/types";
 
 interface UploadCardProps {
   onFileSelected: (file: File) => void;
@@ -16,7 +26,14 @@ export const UploadCard: React.FC<UploadCardProps> = ({
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [fileError, setFileError] = useState<string | null>(null);
+  const [samples, setSamples] = useState<SampleReport[]>([]);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    getSampleReports()
+      .then((data) => setSamples(data))
+      .catch((err) => console.error("Failed to load sample reports:", err));
+  }, []);
 
   const handleDrag = (e: React.DragEvent) => {
     e.preventDefault();
@@ -32,7 +49,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
     setFileError(null);
     const validExtensions = [".txt", ".pdf", ".png", ".jpg", ".jpeg"];
     const ext = "." + file.name.split(".").pop()?.toLowerCase();
-    
+
     if (!validExtensions.includes(ext)) {
       setFileError("Choose a PDF, PNG, JPG, or TXT report.");
       return;
@@ -44,7 +61,6 @@ export const UploadCard: React.FC<UploadCardProps> = ({
     }
 
     setSelectedFile(file);
-    // Simulate upload progress preview matching UI inspiration
     setUploadProgress(0);
     let p = 0;
     const interval = setInterval(() => {
@@ -86,6 +102,13 @@ export const UploadCard: React.FC<UploadCardProps> = ({
     }
   };
 
+  const handleSelectSample = (sample: SampleReport) => {
+    const file = new File([sample.text], `${sample.id}.txt`, {
+      type: "text/plain",
+    });
+    processFile(file);
+  };
+
   const formatSize = (bytes: number) => {
     if (bytes < 1024 * 1024) {
       return `${(bytes / 1024).toFixed(1)} KB`;
@@ -94,10 +117,9 @@ export const UploadCard: React.FC<UploadCardProps> = ({
   };
 
   return (
-    <div className="w-full max-w-xl mx-auto px-4 py-8">
-      {/* Outer Card container styled like the design inspiration */}
+    <div className="w-full max-w-3xl mx-auto px-4 py-8 space-y-6">
+      {/* Outer Card container */}
       <div className="glass-card p-6 sm:p-8 space-y-6">
-        
         {/* Header Title */}
         <div className="flex items-center justify-between">
           <div>
@@ -105,7 +127,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
               Upload your report
             </h2>
             <p className="text-xs text-[#a8b2c1] mt-1">
-              Upload a medical report for a plain-language summary.
+              Upload any medical report or choose a sample to see the complete analysis, entities, and clinical data.
             </p>
           </div>
         </div>
@@ -129,7 +151,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
             className="hidden"
           />
 
-          {/* 3D Folder Graphic Icon (inspired directly by image 2) */}
+          {/* 3D Folder Graphic Icon */}
           <div className="relative w-20 h-20 flex items-center justify-center">
             <div className="absolute inset-0 bg-[#AFACD0]/20 rounded-full blur-xl animate-pulse" />
             <svg
@@ -189,7 +211,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
           </div>
         )}
 
-        {/* Selected File Widget (Matching Image 2 inspiration) */}
+        {/* Selected File Widget */}
         {selectedFile && (
           <div className="p-4 rounded-xl bg-[#080f11]/60 border border-[rgba(175,172,208,0.2)] space-y-3">
             <div className="flex items-center justify-between">
@@ -233,12 +255,12 @@ export const UploadCard: React.FC<UploadCardProps> = ({
           </div>
         )}
 
-        {/* Bottom Actions Bar (Matching Image 2 inspiration buttons) */}
+        {/* Bottom Actions Bar */}
         <div className="flex items-center justify-between pt-2">
           <button
             type="button"
             className="w-9 h-9 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex items-center justify-center text-[#a8b2c1] hover:text-white transition-all"
-            title="Privacy & help"
+            title="Zero-retention privacy policy"
           >
             <HelpCircle className="w-4 h-4" />
           </button>
@@ -248,7 +270,7 @@ export const UploadCard: React.FC<UploadCardProps> = ({
               <button
                 type="button"
                 onClick={handleRemoveFile}
-                className="px-4 py-2 rounded-xl text-sm font-medium text-[#a8b2c1] hover:text-white hover:bg-white/5 transition-all"
+                className="px-4 py-2 rounded-xl text-sm font-medium text-[#a8b2c1] hover:text-white hover:bg-white/5 transition-all cursor-pointer"
               >
                 Cancel
               </button>
@@ -270,16 +292,61 @@ export const UploadCard: React.FC<UploadCardProps> = ({
                   <span>Processing...</span>
                 </>
               ) : (
-                <span>Continue</span>
+                <span>Analyze Full Report</span>
               )}
             </button>
           </div>
         </div>
-
       </div>
 
+      {/* ── Sample Reports Section (Dataset Explorer) ────────────────────── */}
+      {samples.length > 0 && (
+        <div className="glass-card p-6 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-[#AFACD0]" />
+                <span>Or explore with pre-loaded Kaggle / MTSamples reports</span>
+              </h3>
+              <p className="text-xs text-[#a8b2c1]">
+                Click any report below to instantly load and test the complete analytical pipeline.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+            {samples.map((sample) => (
+              <button
+                key={sample.id}
+                type="button"
+                onClick={() => handleSelectSample(sample)}
+                className="p-4 rounded-xl bg-[#080f11]/50 border border-white/10 hover:border-[#AFACD0]/40 text-left transition-all hover:bg-[#080f11]/70 cursor-pointer flex flex-col justify-between group"
+              >
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#AFACD0]/20 text-[#AFACD0] border border-[#AFACD0]/30 font-semibold uppercase">
+                      {sample.badge}
+                    </span>
+                    <span className="text-xs text-[#619BD0] group-hover:translate-x-1 transition-transform flex items-center gap-1 font-semibold">
+                      <span>Load</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </span>
+                  </div>
+                  <h4 className="text-xs font-bold text-white group-hover:text-[#AFACD0] transition-colors">
+                    {sample.title}
+                  </h4>
+                  <p className="text-[11px] text-[#738094] leading-relaxed line-clamp-2">
+                    {sample.description}
+                  </p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Privacy note under card */}
-      <div className="mt-4 text-center">
+      <div className="text-center">
         <p className="text-xs text-[#738094] flex items-center justify-center gap-1.5">
           <CheckCircle2 className="w-3.5 h-3.5 text-[#619BD0]" />
           <span>Zero-retention privacy: File bytes are processed in memory and never saved to disk.</span>

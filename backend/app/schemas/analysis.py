@@ -155,6 +155,9 @@ class AnalysisResult(BaseModel):
     detected_entities: list[DetectedEntity] = Field(default_factory=list)
     lifestyle: Lifestyle = Field(default_factory=Lifestyle)
     questions_for_doctor: list[str] = Field(default_factory=list)
+    extracted_text: Optional[str] = Field(
+        None, description="Complete extracted text from the analyzed document"
+    )
     disclaimer: str = Field(
         ...,
         description=(

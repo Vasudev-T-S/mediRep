@@ -15,6 +15,7 @@ python-dotenv==1.0.1
 
 # ── Database ──────────────────────────────────────────────────────────────────
 sqlalchemy==2.0.36
+greenlet>=3.0.0               # required by SQLAlchemy asyncio
 aiosqlite==0.20.0             # async SQLite driver (dev)
 
 # ── HTTP client (for LLM provider calls) ─────────────────────────────────────

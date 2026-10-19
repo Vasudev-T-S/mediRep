@@ -1,0 +1,128 @@
+{
+  "MED_01635": [
+    {
+      "text": "Synovitis",
+      "label": "DISEASE"
+    },
+    {
+      "text": "anterior cruciate ligament tear",
+      "label": "DISEASE"
+    },
+    {
+      "text": "left knee pain",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "left knee",
+      "label": "ANATOMY"
+    }
+  ],
+  "MED_01524": [
+    {
+      "text": "Left-sided weakness",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "fevers",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "chills",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "diaphoresis",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "anorexia",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "urinary frequency",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "myalgias",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "generalized weakness",
+      "label": "SYMPTOM"
+    }
+  ],
+  "MED_02252": [
+    {
+      "text": "chronic pain",
+      "label": "SYMPTOM"
+    },
+    {
+      "text": "methadone",
+      "label": "MEDICATION"
+    },
+    {
+      "text": "neck",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "breast",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "abdomen",
+      "label": "ANATOMY"
+    }
+  ],
+  "MED_01028": [
+    {
+      "text": "Dentigerous cyst",
+      "label": "DISEASE"
+    },
+    {
+      "text": "left mandible",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "wisdom tooth",
+      "label": "ANATOMY"
+    }
+  ],
+  "MED_01768": [
+    {
+      "text": "FCR tendinitis",
+      "label": "DISEASE"
+    },
+    {
+      "text": "cortisone",
+      "label": "MEDICATION"
+    },
+    {
+      "text": "ibuprofen",
+      "label": "MEDICATION"
+    },
+    {
+      "text": "Wrist",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "elbow",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "shoulder",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "neck",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "FCR tendon",
+      "label": "ANATOMY"
+    },
+    {
+      "text": "scaphoid",
+      "label": "ANATOMY"
+    }
+  ]
+}

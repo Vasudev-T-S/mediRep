@@ -1,0 +1,107 @@
+==============================================================
+              SAMPLE DIAGNOSTICS LABORATORY
+   12 Example Street, Test City, 000000 | +00 000 000 0000
+==============================================================
+                COMPREHENSIVE MEDICAL REPORT
+        *** FICTIONAL DATA - FOR SOFTWARE TESTING ONLY ***
+
+Patient Name : John A. Doe            Report ID   : RPT-2026-000123
+Age / Sex    : 45 Years / Male        Collected On: 17-Oct-2026 08:30
+Patient ID   : PID-100045             Reported On : 18-Oct-2026 14:10
+Referred By  : Dr. Jane Smith, MD     Sample Type : Blood, Urine
+Phone        : +00 111 222 3333       Blood Group : B Positive
+
+--------------------------------------------------------------
+VITAL SIGNS
+--------------------------------------------------------------
+Parameter          Value             Reference
+Blood Pressure     138 / 88 mmHg     < 120 / 80 mmHg
+Heart Rate         76 bpm            60 - 100 bpm
+Temperature        98.4 F            97.8 - 99.1 F
+SpO2               98 %              95 - 100 %
+Height / Weight    175 cm / 82 kg    -
+BMI                26.8 kg/m2        18.5 - 24.9
+
+--------------------------------------------------------------
+COMPLETE BLOOD COUNT (CBC)
+--------------------------------------------------------------
+Test               Result  Unit         Reference     Flag
+Hemoglobin         14.2    g/dL         13.0 - 17.0   NORMAL
+RBC Count          5.1     million/uL   4.5 - 5.5     NORMAL
+WBC Count          11.8    10^3/uL      4.0 - 11.0    HIGH
+Platelet Count     245     10^3/uL      150 - 410     NORMAL
+Hematocrit (PCV)   43.5    %            40 - 50       NORMAL
+MCV                85.3    fL           83 - 101      NORMAL
+Neutrophils        68      %            40 - 80       NORMAL
+Lymphocytes        24      %            20 - 40       NORMAL
+ESR                22      mm/hr        0 - 15        HIGH
+
+--------------------------------------------------------------
+LIPID PROFILE
+--------------------------------------------------------------
+Test               Result  Unit         Reference     Flag
+Total Cholesterol  228     mg/dL        < 200         HIGH
+HDL Cholesterol    38      mg/dL        > 40          LOW
+LDL Cholesterol    152     mg/dL        < 100         HIGH
+Triglycerides      190     mg/dL        < 150         HIGH
+VLDL               38      mg/dL        5 - 40        NORMAL
+
+--------------------------------------------------------------
+BLOOD SUGAR, KIDNEY AND LIVER FUNCTION
+--------------------------------------------------------------
+Test                   Result  Unit    Reference     Flag
+Fasting Blood Glucose  112     mg/dL   70 - 99       HIGH
+HbA1c                  5.9     %       < 5.7         HIGH
+Serum Creatinine       1.0     mg/dL   0.7 - 1.3     NORMAL
+Blood Urea             28      mg/dL   15 - 40       NORMAL
+Uric Acid              6.8     mg/dL   3.5 - 7.2     NORMAL
+SGOT (AST)             34      U/L     5 - 40        NORMAL
+SGPT (ALT)             48      U/L     5 - 41        HIGH
+Total Bilirubin        0.8     mg/dL   0.1 - 1.2     NORMAL
+Alkaline Phosphatase   92      U/L     44 - 147      NORMAL
+
+--------------------------------------------------------------
+THYROID AND VITAMINS
+--------------------------------------------------------------
+Test               Result  Unit         Reference     Flag
+TSH                2.4     uIU/mL       0.4 - 4.0     NORMAL
+Vitamin D (25-OH)  18      ng/mL        30 - 100      LOW
+Vitamin B12        310     pg/mL        200 - 900     NORMAL
+
+--------------------------------------------------------------
+URINE ROUTINE
+--------------------------------------------------------------
+Test                   Result               Reference
+Colour / Appearance    Pale yellow / Clear  Pale yellow / Clear
+pH                     6.0                  4.6 - 8.0
+Specific Gravity       1.015                1.005 - 1.030
+Protein / Glucose      Nil / Nil            Nil
+Pus Cells              1-2 /HPF             0 - 5 /HPF
+
+--------------------------------------------------------------
+CLINICAL SUMMARY AND IMPRESSION
+--------------------------------------------------------------
+The patient presents with mildly elevated blood pressure,
+borderline raised fasting glucose and HbA1c (prediabetic range),
+and an atherogenic lipid profile with elevated LDL and
+triglycerides and low HDL. Mild leukocytosis with raised ESR may
+indicate a minor inflammatory or infective process. Vitamin D
+deficiency noted. Kidney function and thyroid function are within
+normal limits.
+
+RECOMMENDATIONS
+ - Lifestyle modification: balanced diet, reduced refined sugar
+   and saturated fat, 150 min/week of exercise.
+ - Repeat fasting glucose and lipid profile in 3 months.
+ - Vitamin D supplementation as advised by the treating physician.
+ - Follow up with physician for blood pressure monitoring and
+   review of raised WBC/ESR.
+
+--------------------------------------------------------------
+Dr. A. Sample, MD (Pathology)      Dr. B. Example, MD (Biochemistry)
+Consultant Pathologist             Consultant Biochemist
+--------------------------------------------------------------
+This is a computer-generated SAMPLE report containing fictional
+data for software testing. It is not a real medical document and
+must not be used for diagnosis or treatment.
+==============================================================

@@ -127,6 +127,80 @@ async def submit_report(
 
 
 @router.get(
+    "/samples",
+    summary="Get curated sample medical reports for instant testing",
+)
+async def get_sample_reports():
+    """Return realistic curated lab and clinical note samples from the evaluation dataset."""
+    return [
+        {
+            "id": "sample_cbc_glucose",
+            "title": "Complete Blood Count & Metabolic Panel",
+            "category": "Lab Panel",
+            "badge": "Numeric Labs",
+            "description": "Standard blood count with Hemoglobin, Glucose, Platelets, and Cholesterol reference ranges.",
+            "text": (
+                "Complete Blood Count & Basic Metabolic Panel\n"
+                "Hemoglobin: 11.2 g/dL (Reference Range: 12.0 - 15.5 g/dL)\n"
+                "WBC: 6.8 K/uL (Reference Range: 4.5 - 11.0 K/uL)\n"
+                "Platelets: 250 K/uL (Reference Range: 150 - 450 K/uL)\n"
+                "Fasting Glucose: 108 mg/dL (Reference Range: 70 - 99 mg/dL)\n"
+                "Creatinine: 0.9 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)\n"
+                "Potassium: 4.2 mmol/L (Reference Range: 3.5 - 5.0 mmol/L)\n"
+                "Cholesterol: 215 mg/dL (Reference Range: 125 - 200 mg/dL)\n"
+            ),
+        },
+        {
+            "id": "sample_ortho_note",
+            "title": "Orthopedic Clinical Note (Kaggle MED_01635)",
+            "category": "Clinical Note",
+            "badge": "Entity Extraction",
+            "description": "Real transcription note covering ACL tear, left knee pain, and synovitis from the Kaggle dataset.",
+            "text": (
+                "CLINICAL CONSULTATION NOTE\n"
+                "Chief Complaint: Left knee pain and swelling.\n"
+                "History of Present Illness: Patient presents with persistent left knee pain and joint swelling "
+                "for the past 3 weeks following a twisting athletic movement.\n"
+                "Physical Examination: Examination reveals moderate joint effusion and tenderness along the joint line. "
+                "Anterior cruciate ligament tear is evident on anterior drawer testing, with associated active synovitis.\n"
+                "Impression: ACL tear and acute synovitis of the left knee. Recommended orthopedic consultation for arthroscopy.\n"
+            ),
+        },
+        {
+            "id": "sample_iu_xray",
+            "title": "Chest X-Ray Radiology Report (IU X-Ray)",
+            "category": "Radiology",
+            "badge": "Imaging Findings",
+            "description": "Indiana University chest radiograph report detailing airspace consolidation and negation of pneumothorax.",
+            "text": (
+                "CHEST RADIOLOGY REPORT\n"
+                "Indication: 58-year-old female presenting with chronic cough, mild fever, and shortness of breath.\n"
+                "Findings: Frontal and lateral chest views show mild airspace consolidation and patchy pulmonary opacity "
+                "in the right lower lung lobe. No pneumothorax. Heart size and cardiomegaly are absent. No pleural effusion.\n"
+                "Impression: Right lower lobe airspace consolidation, consistent with developing pneumonia.\n"
+            ),
+        },
+        {
+            "id": "sample_lipid_panel",
+            "title": "Lipid & Cardiovascular Risk Panel",
+            "category": "Lab Panel",
+            "badge": "Cardiovascular",
+            "description": "Detailed lipid panel showing Total Cholesterol, LDL, HDL, and Triglycerides.",
+            "text": (
+                "Comprehensive Lipid Panel\n"
+                "Total Cholesterol: 242 mg/dL (Reference Range: 125 - 200 mg/dL)\n"
+                "HDL Cholesterol: 38 mg/dL (Reference Range: 40 - 60 mg/dL)\n"
+                "LDL Cholesterol: 162 mg/dL (Reference Range: 0 - 100 mg/dL)\n"
+                "Triglycerides: 210 mg/dL (Reference Range: 0 - 150 mg/dL)\n"
+                "Fasting Blood Glucose: 126 mg/dL (Reference Range: 70 - 99 mg/dL)\n"
+                "ALT: 32 U/L (Reference Range: 7 - 56 U/L)\n"
+                "AST: 28 U/L (Reference Range: 10 - 40 U/L)\n"
+            ),
+        },
+    ]
+
+
+@router.get(
     "/{id}/status",
     response_model=ReportStatusResponse,
     summary="Poll job status and progress percentage",

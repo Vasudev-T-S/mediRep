@@ -16,6 +16,10 @@ import {
   Info,
   ChevronDown,
   ChevronUp,
+  Tag,
+  Clock,
+  Sparkles,
+  Layers,
 } from "lucide-react";
 import type { AnalysisResult, FindingStatus } from "../api/types";
 import { submitFeedback } from "../api/client";
@@ -25,15 +29,20 @@ interface ResultsDashboardProps {
   onNewAnalysis: () => void;
 }
 
+type TabType = "all" | "findings" | "entities" | "text";
+
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   result,
   onNewAnalysis,
 }) => {
+  const [activeTab, setActiveTab] = useState<TabType>("all");
   const [activeFindingFilter, setActiveFindingFilter] = useState<
     "all" | "high" | "low" | "normal"
   >("all");
+  const [activeEntityFilter, setActiveEntityFilter] = useState<string>("all");
   const [checkedQuestions, setCheckedQuestions] = useState<Record<number, boolean>>({});
   const [copiedQuestion, setCopiedQuestion] = useState(false);
+  const [copiedText, setCopiedText] = useState(false);
   const [expandedFinding, setExpandedFinding] = useState<number | null>(null);
 
   // Feedback state
@@ -41,12 +50,21 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   const [comment, setComment] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
-  const isEntityExtraction = result.analysis_mode === "entity_extraction";
 
   // Filter key findings
   const filteredFindings = result.key_findings.filter((f) => {
     if (activeFindingFilter === "all") return true;
     return f.status === activeFindingFilter;
+  });
+
+  // Extract distinct entity categories
+  const entityLabels = Array.from(
+    new Set(result.detected_entities.map((e) => e.label))
+  );
+
+  const filteredEntities = result.detected_entities.filter((e) => {
+    if (activeEntityFilter === "all") return true;
+    return e.label === activeEntityFilter;
   });
 
   const handleToggleQuestion = (index: number) => {
@@ -63,6 +81,13 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
     navigator.clipboard.writeText(text);
     setCopiedQuestion(true);
     setTimeout(() => setCopiedQuestion(false), 2000);
+  };
+
+  const handleCopyExtractedText = () => {
+    if (!result.extracted_text) return;
+    navigator.clipboard.writeText(result.extracted_text);
+    setCopiedText(true);
+    setTimeout(() => setCopiedText(false), 2000);
   };
 
   const handleSendFeedback = async () => {
@@ -101,49 +126,179 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       default:
         return (
           <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-[#AFACD0]/20 text-[#AFACD0] border border-[#AFACD0]/30 uppercase">
-            UNKNOWN
+            RECORDED
           </span>
         );
     }
   };
 
+  const getEntityBadgeColor = (label: string) => {
+    switch (label) {
+      case "DISEASE":
+        return "bg-rose-500/20 text-rose-300 border-rose-500/40";
+      case "SYMPTOM":
+        return "bg-amber-500/20 text-amber-300 border-amber-500/40";
+      case "MEDICATION":
+        return "bg-purple-500/20 text-purple-300 border-purple-500/40";
+      case "ANATOMY":
+        return "bg-blue-500/20 text-blue-300 border-blue-500/40";
+      case "TEST":
+        return "bg-emerald-500/20 text-emerald-300 border-emerald-500/40";
+      case "PROCEDURE":
+        return "bg-cyan-500/20 text-cyan-300 border-cyan-500/40";
+      case "RADIOLOGICAL_FINDING":
+        return "bg-indigo-500/20 text-indigo-300 border-indigo-500/40";
+      default:
+        return "bg-slate-500/20 text-slate-300 border-slate-500/40";
+    }
+  };
+
+  const totalOutOfRange = result.key_findings.filter(
+    (f) => f.status === "high" || f.status === "low"
+  ).length;
+
   return (
     <div className="w-full max-w-5xl mx-auto px-4 py-8 space-y-8 print:p-0">
       
       {/* ── Top Bar & Actions ────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 glass-card p-6">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="text-xs px-3 py-1 rounded-full bg-[#AFACD0]/20 text-[#AFACD0] font-semibold uppercase border border-[#AFACD0]/30">
-              {result.report_type.replace("_", " ")}
-            </span>
-            <span className="text-xs text-[#738094]">
-              ID: {result.report_id.slice(0, 8)}...
-            </span>
+      <div className="glass-card p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-xs px-3 py-1 rounded-full bg-[#AFACD0]/20 text-[#AFACD0] font-semibold uppercase border border-[#AFACD0]/30">
+                {result.report_type.replace("_", " ")}
+              </span>
+              <span className="text-xs text-[#738094]">
+                ID: {result.report_id.slice(0, 8)}...
+              </span>
+              {result.meta.model && (
+                <span className="text-xs px-2.5 py-0.5 rounded-full bg-white/5 text-[#a8b2c1] border border-white/10 flex items-center gap-1">
+                  <Sparkles className="w-3 h-3 text-[#AFACD0]" />
+                  <span>{result.meta.model}</span>
+                </span>
+              )}
+              {result.meta.processing_seconds !== undefined && (
+                <span className="text-xs text-[#738094] flex items-center gap-1">
+                  <Clock className="w-3 h-3" />
+                  <span>{result.meta.processing_seconds}s</span>
+                </span>
+              )}
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-white mt-2">
+              Comprehensive Medical Analysis
+            </h2>
           </div>
-          <h2 className="text-2xl font-extrabold text-white mt-2">
-            {isEntityExtraction ? "Detected Medical Entities" : "Report Analysis Results"}
-          </h2>
+
+          <div className="flex items-center gap-3 w-full sm:w-auto print:hidden">
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-white transition-all cursor-pointer"
+            >
+              <Printer className="w-4 h-4 text-[#AFACD0]" />
+              <span>Print / Save PDF</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={onNewAnalysis}
+              className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#619BD0] to-[#AFACD0] text-xs font-bold text-white shadow-lg hover:opacity-95 transition-all cursor-pointer"
+            >
+              <RotateCcw className="w-4 h-4" />
+              <span>Analyze Another</span>
+            </button>
+          </div>
         </div>
 
-        <div className="flex items-center gap-3 w-full sm:w-auto print:hidden">
+        {/* Metric Badges Quick Bar */}
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-3 border-t border-white/5">
+          <div className="p-3 rounded-xl bg-[#080f11]/40 border border-white/5">
+            <span className="text-[11px] text-[#738094] uppercase tracking-wider block">Lab Findings</span>
+            <span className="text-lg font-bold text-white">
+              {result.key_findings.length}{" "}
+              {totalOutOfRange > 0 && (
+                <span className="text-xs text-[#FE9458] font-normal">({totalOutOfRange} out of range)</span>
+              )}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-[#080f11]/40 border border-white/5">
+            <span className="text-[11px] text-[#738094] uppercase tracking-wider block">Clinical Entities</span>
+            <span className="text-lg font-bold text-white">
+              {result.detected_entities.length}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-[#080f11]/40 border border-white/5">
+            <span className="text-[11px] text-[#738094] uppercase tracking-wider block">Medical Terms</span>
+            <span className="text-lg font-bold text-white">
+              {result.medical_terms.length}
+            </span>
+          </div>
+
+          <div className="p-3 rounded-xl bg-[#080f11]/40 border border-white/5">
+            <span className="text-[11px] text-[#738094] uppercase tracking-wider block">Readability</span>
+            <span className="text-lg font-bold text-white">
+              {result.meta.readability_grade ? `Grade ${result.meta.readability_grade}` : "Plain English"}
+            </span>
+          </div>
+        </div>
+
+        {/* View Mode Navigation Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pt-2 border-t border-white/5 print:hidden">
           <button
             type="button"
-            onClick={() => window.print()}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-white transition-all cursor-pointer"
+            onClick={() => setActiveTab("all")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === "all"
+                ? "bg-[#AFACD0] text-[#080f11] shadow-md"
+                : "bg-white/5 text-[#a8b2c1] hover:text-white"
+            }`}
           >
-            <Printer className="w-4 h-4 text-[#AFACD0]" />
-            <span>Print / Save PDF</span>
+            <Layers className="w-3.5 h-3.5" />
+            <span>Complete Overview</span>
           </button>
 
           <button
             type="button"
-            onClick={onNewAnalysis}
-            className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#619BD0] to-[#AFACD0] text-xs font-bold text-white shadow-lg hover:opacity-95 transition-all cursor-pointer"
+            onClick={() => setActiveTab("findings")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === "findings"
+                ? "bg-[#AFACD0] text-[#080f11] shadow-md"
+                : "bg-white/5 text-[#a8b2c1] hover:text-white"
+            }`}
           >
-            <RotateCcw className="w-4 h-4" />
-            <span>Upload New Report</span>
+            <ActivityIcon className="w-3.5 h-3.5" />
+            <span>Lab Findings ({result.key_findings.length})</span>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setActiveTab("entities")}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              activeTab === "entities"
+                ? "bg-[#AFACD0] text-[#080f11] shadow-md"
+                : "bg-white/5 text-[#a8b2c1] hover:text-white"
+            }`}
+          >
+            <Tag className="w-3.5 h-3.5" />
+            <span>Clinical Entities ({result.detected_entities.length})</span>
+          </button>
+
+          {result.extracted_text && (
+            <button
+              type="button"
+              onClick={() => setActiveTab("text")}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                activeTab === "text"
+                  ? "bg-[#AFACD0] text-[#080f11] shadow-md"
+                  : "bg-white/5 text-[#a8b2c1] hover:text-white"
+              }`}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              <span>Original Document Text</span>
+            </button>
+          )}
         </div>
       </div>
 
@@ -161,26 +316,29 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         </div>
       )}
 
-      {/* ── Overall Summary ──────────────────────────────────────────────── */}
-      <div className="glass-card p-6 sm:p-8 space-y-4">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
-            <FileText className="w-5 h-5 text-[#619BD0]" />
-            <span>{isEntityExtraction ? "Entity Extraction Summary" : "Plain-Language Summary"}</span>
-          </h3>
-          {result.meta.readability_grade && (
-            <span className="text-xs px-2.5 py-1 rounded-full bg-[#619BD0]/15 text-[#619BD0] border border-[#619BD0]/30 font-medium">
-              Grade {result.meta.readability_grade} Readability
-            </span>
-          )}
+      {/* ── Overall Summary Card (Shown in all or findings tabs) ─────────── */}
+      {(activeTab === "all" || activeTab === "findings") && (
+        <div className="glass-card p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold text-white flex items-center gap-2">
+              <FileText className="w-5 h-5 text-[#619BD0]" />
+              <span>Plain-Language Summary</span>
+            </h3>
+            {result.meta.readability_grade && (
+              <span className="text-xs px-2.5 py-1 rounded-full bg-[#619BD0]/15 text-[#619BD0] border border-[#619BD0]/30 font-medium">
+                Grade {result.meta.readability_grade} Readability
+              </span>
+            )}
+          </div>
+
+          <p className="text-base text-[#f0f2f8] leading-relaxed font-normal bg-[#080f11]/40 p-5 rounded-xl border border-white/5">
+            {result.overall_summary}
+          </p>
         </div>
+      )}
 
-        <p className="text-base text-[#f0f2f8] leading-relaxed font-normal bg-[#080f11]/40 p-5 rounded-xl border border-white/5">
-          {result.overall_summary}
-        </p>
-      </div>
-
-      {!isEntityExtraction && (
+      {/* ── Key Lab Findings Section ────────────────────────────────────── */}
+      {(activeTab === "all" || activeTab === "findings") && (
         <div className="glass-card p-6 sm:p-8 space-y-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -189,105 +347,164 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 <span>Key Lab Findings ({result.key_findings.length})</span>
               </h3>
               <p className="text-xs text-[#a8b2c1]">
-                Values are compared with reference ranges printed in your report.
+                Extracted measurements compared against reference ranges printed in the report.
               </p>
             </div>
 
-          {/* Filter tabs */}
-          <div className="flex items-center gap-1.5 p-1 rounded-xl bg-black/40 border border-white/10 text-xs">
-            {(["all", "high", "low", "normal"] as const).map((filter) => (
-              <button
-                key={filter}
-                type="button"
-                onClick={() => setActiveFindingFilter(filter)}
-                className={`px-3 py-1.5 rounded-lg font-semibold capitalize transition-all cursor-pointer ${
-                  activeFindingFilter === filter
-                    ? "bg-[#AFACD0] text-[#080f11] shadow-md"
-                    : "text-[#a8b2c1] hover:text-white"
-                }`}
-              >
-                {filter}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Findings List */}
-        {filteredFindings.length === 0 ? (
-          <div className="p-8 text-center text-sm text-[#738094]">
-            No findings match the selected status filter.
-          </div>
-        ) : (
-          <div className="space-y-3">
-            {filteredFindings.map((finding, idx) => {
-              const isExpanded = expandedFinding === idx;
-              return (
-                <div
-                  key={idx}
-                  className="rounded-xl bg-[#080f11]/50 border border-white/10 hover:border-[#AFACD0]/30 transition-all overflow-hidden"
-                >
-                  <div
-                    onClick={() => setExpandedFinding(isExpanded ? null : idx)}
-                    className="p-4 flex items-center justify-between cursor-pointer gap-4"
+            {/* Filter tabs */}
+            {result.key_findings.length > 0 && (
+              <div className="flex items-center gap-1.5 p-1 rounded-xl bg-black/40 border border-white/10 text-xs">
+                {(["all", "high", "low", "normal"] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setActiveFindingFilter(filter)}
+                    className={`px-3 py-1.5 rounded-lg font-semibold capitalize transition-all cursor-pointer ${
+                      activeFindingFilter === filter
+                        ? "bg-[#AFACD0] text-[#080f11] shadow-md"
+                        : "text-[#a8b2c1] hover:text-white"
+                    }`}
                   >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div>
-                        <p className="text-sm font-bold text-white">
-                          {finding.name}
-                        </p>
-                        <p className="text-xs text-[#a8b2c1]">
-                          {finding.value !== null
-                            ? `${finding.value} ${finding.unit || ""}`
-                            : "Value N/A"}{" "}
-                          {finding.reference_range && (
-                            <span className="text-[#738094]">
-                              (Ref: {finding.reference_range})
-                            </span>
-                          )}
-                        </p>
+                    {filter}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {result.key_findings.length === 0 ? (
+            <div className="p-8 text-center text-sm text-[#738094] bg-[#080f11]/30 rounded-xl border border-white/5">
+              No tabular numeric lab rows were detected in this document. Clinical concepts and diagnoses are detailed under Clinical Entities below.
+            </div>
+          ) : filteredFindings.length === 0 ? (
+            <div className="p-8 text-center text-sm text-[#738094]">
+              No findings match the selected status filter ({activeFindingFilter}).
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredFindings.map((finding, idx) => {
+                const isExpanded = expandedFinding === idx;
+                return (
+                  <div
+                    key={idx}
+                    className="rounded-xl bg-[#080f11]/50 border border-white/10 hover:border-[#AFACD0]/30 transition-all overflow-hidden"
+                  >
+                    <div
+                      onClick={() => setExpandedFinding(isExpanded ? null : idx)}
+                      className="p-4 flex items-center justify-between cursor-pointer gap-4"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div>
+                          <p className="text-sm font-bold text-white">
+                            {finding.name}
+                          </p>
+                          <p className="text-xs text-[#a8b2c1]">
+                            {finding.value !== null
+                              ? `${finding.value} ${finding.unit || ""}`
+                              : "Value N/A"}{" "}
+                            {finding.reference_range && (
+                              <span className="text-[#738094]">
+                                (Reference: {finding.reference_range})
+                              </span>
+                            )}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3 shrink-0">
+                        {getStatusBadge(finding.status)}
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-[#a8b2c1]" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-[#a8b2c1]" />
+                        )}
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 shrink-0">
-                      {getStatusBadge(finding.status)}
-                      {isExpanded ? (
-                        <ChevronUp className="w-4 h-4 text-[#a8b2c1]" />
-                      ) : (
-                        <ChevronDown className="w-4 h-4 text-[#a8b2c1]" />
-                      )}
+                    <div className="px-4 pb-4 text-xs text-[#a8b2c1] leading-relaxed border-t border-white/5 pt-3">
+                      <p className="text-white/90">{finding.explanation}</p>
                     </div>
                   </div>
-
-                  {/* Plain language explanation preview */}
-                  <div className="px-4 pb-4 text-xs text-[#a8b2c1] leading-relaxed border-t border-white/5 pt-3">
-                    <p className="text-white/90">{finding.explanation}</p>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                );
+              })}
+            </div>
+          )}
         </div>
       )}
 
-      {isEntityExtraction && (
-        <div className="glass-card p-6 sm:p-8 space-y-4">
-          <h3 className="text-lg font-bold text-white">
-            Detected Entities ({result.detected_entities.length})
-          </h3>
-          {result.detected_entities.length === 0 ? (
-            <p className="text-sm text-[#a8b2c1]">No entities were detected in this text.</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {result.detected_entities.map((entity, idx) => (
-                <div
-                  key={`${entity.start}-${entity.end}-${idx}`}
-                  className="p-4 rounded-xl bg-[#080f11]/40 border border-white/10"
+      {/* ── Detected Clinical Entities (Kaggle Taxonomy) ────────────────── */}
+      {(activeTab === "all" || activeTab === "entities") && (
+        <div className="glass-card p-6 sm:p-8 space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Tag className="w-5 h-5 text-[#AFACD0]" />
+                <span>Detected Clinical Entities ({result.detected_entities.length})</span>
+              </h3>
+              <p className="text-xs text-[#a8b2c1]">
+                Biomedical entities identified according to the 8 clinical annotation classes.
+              </p>
+            </div>
+
+            {/* Category filter pills */}
+            {entityLabels.length > 0 && (
+              <div className="flex items-center gap-1.5 overflow-x-auto p-1 rounded-xl bg-black/40 border border-white/10 text-xs">
+                <button
+                  type="button"
+                  onClick={() => setActiveEntityFilter("all")}
+                  className={`px-3 py-1.5 rounded-lg font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
+                    activeEntityFilter === "all"
+                      ? "bg-[#AFACD0] text-[#080f11] shadow-md"
+                      : "text-[#a8b2c1] hover:text-white"
+                  }`}
                 >
-                  <p className="font-semibold text-white">{entity.text}</p>
-                  <p className="mt-1 text-xs text-[#a8b2c1]">
-                    {entity.label} · {(entity.confidence * 100).toFixed(1)}% model score
-                  </p>
+                  All ({result.detected_entities.length})
+                </button>
+                {entityLabels.map((lbl) => (
+                  <button
+                    key={lbl}
+                    type="button"
+                    onClick={() => setActiveEntityFilter(lbl)}
+                    className={`px-3 py-1.5 rounded-lg font-semibold capitalize whitespace-nowrap transition-all cursor-pointer ${
+                      activeEntityFilter === lbl
+                        ? "bg-[#AFACD0] text-[#080f11] shadow-md"
+                        : "text-[#a8b2c1] hover:text-white"
+                    }`}
+                  >
+                    {lbl.replace("_", " ")}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {result.detected_entities.length === 0 ? (
+            <p className="text-sm text-[#738094] p-4 bg-[#080f11]/30 rounded-xl">
+              No specific clinical entities were detected.
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+              {filteredEntities.map((entity, idx) => (
+                <div
+                  key={`${entity.text}-${idx}`}
+                  className="p-4 rounded-xl bg-[#080f11]/40 border border-white/10 hover:border-white/20 transition-all flex flex-col justify-between gap-2"
+                >
+                  <div>
+                    <span
+                      className={`inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold tracking-wider uppercase border mb-2 ${getEntityBadgeColor(
+                        entity.label
+                      )}`}
+                    >
+                      {entity.label.replace("_", " ")}
+                    </span>
+                    <p className="font-bold text-sm text-white">{entity.text}</p>
+                  </div>
+                  <div className="text-[11px] text-[#738094] flex items-center justify-between pt-2 border-t border-white/5">
+                    <span>Confidence</span>
+                    <span className="font-semibold text-[#a8b2c1]">
+                      {(entity.confidence * 100).toFixed(0)}%
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>
@@ -296,20 +513,25 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       )}
 
       {/* ── Medical Terms Glossary ───────────────────────────────────────── */}
-      {!isEntityExtraction && result.medical_terms.length > 0 && (
+      {(activeTab === "all" || activeTab === "entities") && result.medical_terms.length > 0 && (
         <div className="glass-card p-6 sm:p-8 space-y-4">
           <h3 className="text-lg font-bold text-white flex items-center gap-2">
             <BookOpen className="w-5 h-5 text-[#AFACD0]" />
             <span>Medical Terms Explained</span>
           </h3>
+          <p className="text-xs text-[#a8b2c1]">
+            Plain-language definitions for clinical conditions and biomarkers found in this report.
+          </p>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
             {result.medical_terms.map((term, idx) => (
               <div
                 key={idx}
-                className="p-4 rounded-xl bg-[#080f11]/40 border border-white/10 space-y-2"
+                className="p-4 rounded-xl bg-[#080f11]/40 border border-white/10 space-y-2 hover:border-[#AFACD0]/30 transition-all"
               >
-                <h4 className="text-sm font-bold text-[#AFACD0]">{term.term}</h4>
+                <h4 className="text-sm font-bold text-[#AFACD0] flex items-center gap-2">
+                  <span>{term.term}</span>
+                </h4>
                 <p className="text-xs text-[#a8b2c1] leading-relaxed">
                   {term.explanation}
                 </p>
@@ -319,16 +541,16 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         </div>
       )}
 
-      {/* ── Lifestyle Recommendations (If no Red Flag) ───────────────────── */}
-      {!isEntityExtraction && !result.red_flag.triggered && (
+      {/* ── Evidence-Grounded Lifestyle Suggestions ─────────────────────── */}
+      {(activeTab === "all" || activeTab === "findings") && !result.red_flag.triggered && (
         <div className="glass-card p-6 sm:p-8 space-y-6">
           <div>
             <h3 className="text-lg font-bold text-white flex items-center gap-2">
               <Apple className="w-5 h-5 text-[#F7A99A]" />
-              <span>Evidence-Grounded Lifestyle Suggestions</span>
+              <span>Evidence-Grounded Lifestyle & Nutrition Suggestions</span>
             </h3>
             <p className="text-xs text-[#a8b2c1]">
-              General health practices grounded in clinical guidelines.
+              Personalized suggestions derived from clinical guidelines and findings.
             </p>
           </div>
 
@@ -342,7 +564,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 <ul className="space-y-2 text-xs text-[#a8b2c1]">
                   {result.lifestyle.diet.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-[#FE9458]">•</span>
+                      <span className="text-[#FE9458] font-bold">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -359,7 +581,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 <ul className="space-y-2 text-xs text-[#a8b2c1]">
                   {result.lifestyle.physical_activity.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-[#619BD0]">•</span>
+                      <span className="text-[#619BD0] font-bold">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -376,7 +598,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                 <ul className="space-y-2 text-xs text-[#a8b2c1]">
                   {result.lifestyle.precautions.map((item, i) => (
                     <li key={i} className="flex items-start gap-2">
-                      <span className="text-[#F7A99A]">•</span>
+                      <span className="text-[#F7A99A] font-bold">•</span>
                       <span>{item}</span>
                     </li>
                   ))}
@@ -388,7 +610,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           {/* Sources cited */}
           {result.lifestyle.sources.length > 0 && (
             <div className="pt-2 flex items-center gap-2 text-xs text-[#738094] flex-wrap">
-              <span>Cited sources:</span>
+              <span>Guideline sources:</span>
               {result.lifestyle.sources.map((s) => (
                 <a
                   key={s.id}
@@ -406,13 +628,18 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
       )}
 
       {/* ── Questions for Doctor ────────────────────────────────────────── */}
-      {!isEntityExtraction && result.questions_for_doctor.length > 0 && (
+      {(activeTab === "all" || activeTab === "findings") && result.questions_for_doctor.length > 0 && (
         <div className="glass-card p-6 sm:p-8 space-y-4">
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-bold text-white flex items-center gap-2">
-              <Info className="w-5 h-5 text-[#619BD0]" />
-              <span>Questions for Your Doctor</span>
-            </h3>
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <Info className="w-5 h-5 text-[#619BD0]" />
+                <span>Questions for Your Doctor</span>
+              </h3>
+              <p className="text-xs text-[#a8b2c1]">
+                Interactive checklist you can print or copy for your next doctor's appointment.
+              </p>
+            </div>
             <button
               type="button"
               onClick={handleCopyQuestions}
@@ -432,7 +659,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             </button>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 pt-2">
             {result.questions_for_doctor.map((q, idx) => {
               const isChecked = !!checkedQuestions[idx];
               return (
@@ -458,15 +685,53 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
         </div>
       )}
 
+      {/* ── Original Extracted Document Text ────────────────────────────── */}
+      {(activeTab === "all" || activeTab === "text") && result.extracted_text && (
+        <div className="glass-card p-6 sm:p-8 space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                <FileText className="w-5 h-5 text-[#619BD0]" />
+                <span>Original Document Text</span>
+              </h3>
+              <p className="text-xs text-[#a8b2c1]">
+                Full extracted text content read directly from your uploaded report.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={handleCopyExtractedText}
+              className="flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-[#a8b2c1] hover:text-white transition-all cursor-pointer"
+            >
+              {copiedText ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[#619BD0]" />
+                  <span className="text-[#619BD0]">Copied!</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="w-3.5 h-3.5" />
+                  <span>Copy Text</span>
+                </>
+              )}
+            </button>
+          </div>
+
+          <div className="relative">
+            <pre className="p-5 rounded-xl bg-[#080f11]/80 border border-white/10 text-xs text-[#f0f2f8] font-mono whitespace-pre-wrap overflow-x-auto max-h-96 leading-relaxed">
+              {result.extracted_text}
+            </pre>
+          </div>
+        </div>
+      )}
+
       {/* ── User Feedback Widget ────────────────────────────────────────── */}
-      <div className="glass-card p-6 sm:p-8 space-y-4 text-center max-w-xl mx-auto">
+      <div className="glass-card p-6 sm:p-8 space-y-4 text-center max-w-xl mx-auto print:hidden">
         <h3 className="text-base font-bold text-white">
-          {isEntityExtraction ? "Was this entity extraction helpful?" : "Was this summary helpful?"}
+          Was this comprehensive medical summary helpful?
         </h3>
         <p className="text-xs text-[#a8b2c1]">
-          {isEntityExtraction
-            ? "Your feedback helps us evaluate entity detection."
-            : "Your feedback helps us continuously improve plain-language medical accuracy."}
+          Your feedback helps us continuously improve plain-language medical accuracy and entity detection.
         </p>
 
         {feedbackSubmitted ? (
