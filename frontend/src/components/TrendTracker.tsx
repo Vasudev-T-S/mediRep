@@ -10,6 +10,8 @@ import {
   ArrowRight,
   CheckCircle2,
   Sparkles,
+  Edit3,
+  Trash2,
 } from "lucide-react";
 import type { Finding } from "../api/types";
 
@@ -285,52 +287,206 @@ const DEFAULT_JOURNEY: HistoricalReport[] = [
   },
 ];
 
-const STORAGE_KEY = "medirep_longitudinal_history";
+export const NORMALIZE_PARAM_MAP: Record<string, string> = {
+  "fasting blood glucose": "Fasting Glucose",
+  "fasting glucose": "Fasting Glucose",
+  "fasting blood sugar": "Fasting Glucose",
+  "fasting sugar": "Fasting Glucose",
+  "fbs": "Fasting Glucose",
+  "postprandial glucose": "Postprandial Glucose",
+  "postprandial blood glucose": "Postprandial Glucose",
+  "post prandial blood sugar": "Postprandial Glucose",
+  "ppbs": "Postprandial Glucose",
+  "2 hr postprandial glucose": "Postprandial Glucose",
+  "hba1c": "HbA1c",
+  "hemoglobin a1c": "HbA1c",
+  "glycated hemoglobin": "HbA1c",
+  "a1c": "HbA1c",
+  "estimated average glucose": "Estimated Average Glucose",
+  "total cholesterol": "Total Cholesterol",
+  "cholesterol": "Total Cholesterol",
+  "serum creatinine": "Serum Creatinine",
+  "creatinine": "Serum Creatinine",
+  "blood urea nitrogen": "Blood Urea Nitrogen",
+  "bun": "Blood Urea Nitrogen",
+  "triglycerides": "Triglycerides",
+  "hdl cholesterol": "HDL Cholesterol",
+  "hdl": "HDL Cholesterol",
+  "ldl cholesterol": "LDL Cholesterol",
+  "ldl": "LDL Cholesterol",
+  "hemoglobin": "Hemoglobin",
+  "wbc": "WBC",
+  "platelets": "Platelets",
+};
+
+export const getCanonicalParam = (name: string): string => {
+  const clean = name.toLowerCase().replace(/[^a-z0-9]/g, " ").trim().replace(/\s+/g, " ");
+  return NORMALIZE_PARAM_MAP[clean] || NORMALIZE_PARAM_MAP[name.toLowerCase().trim()] || name.trim();
+};
+
+export const STORAGE_KEY = "medirep_longitudinal_history";
+
+export { DEFAULT_JOURNEY };
 
 interface TrendTrackerProps {
   onAnalyzeNewReport: () => void;
+  history?: HistoricalReport[];
+  onUpdateHistory?: (updated: HistoricalReport[]) => void;
+  initialParam?: string;
 }
 
-export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }) => {
-  const [history, setHistory] = useState<HistoricalReport[]>([]);
-  const [selectedParam, setSelectedParam] = useState<string>("Fasting Glucose");
-  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
-
-  // Load history from localStorage or pre-seed
-  useEffect(() => {
+export const TrendTracker: React.FC<TrendTrackerProps> = ({
+  onAnalyzeNewReport,
+  history: propHistory,
+  onUpdateHistory,
+  initialParam,
+}) => {
+  const [internalHistory, setInternalHistory] = useState<HistoricalReport[]>(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length >= DEFAULT_JOURNEY.length) {
-          setHistory(parsed);
-          return;
-        }
+        if (Array.isArray(parsed) && parsed.length > 0) return parsed;
       }
     } catch {
       // Fallback
     }
-    setHistory(DEFAULT_JOURNEY);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_JOURNEY));
-  }, []);
+    return DEFAULT_JOURNEY;
+  });
 
-  const handleResetSampleData = () => {
-    setHistory(DEFAULT_JOURNEY);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(DEFAULT_JOURNEY));
+  const history = propHistory ?? internalHistory;
+  const [selectedParam, setSelectedParam] = useState<string>(() => {
+    return initialParam ? getCanonicalParam(initialParam) : "Fasting Glucose";
+  });
+  const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
+  const [isEditingData, setIsEditingData] = useState(false);
+  const [newPointDate, setNewPointDate] = useState(new Date().toISOString().split("T")[0]);
+  const [newPointVal, setNewPointVal] = useState<string>("");
+
+  useEffect(() => {
+    if (initialParam) {
+      setSelectedParam(getCanonicalParam(initialParam));
+    }
+  }, [initialParam]);
+
+  const updateHistory = (newHistory: HistoricalReport[]) => {
+    if (onUpdateHistory) {
+      onUpdateHistory(newHistory);
+    } else {
+      setInternalHistory(newHistory);
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(newHistory));
+    }
   };
 
-  // Find all unique finding names across all reports
+  const handleResetSampleData = () => {
+    updateHistory(DEFAULT_JOURNEY);
+  };
+
+  const handleClearHistory = () => {
+    updateHistory([]);
+  };
+
+  const handleUpdateFindingValue = (reportId: string, paramName: string, val: number) => {
+    if (isNaN(val)) return;
+    const updated = history.map((rep) => {
+      if (rep.id !== reportId) return rep;
+      return {
+        ...rep,
+        findings: rep.findings.map((f) => {
+          if (
+            getCanonicalParam(f.name).toLowerCase() === paramName.toLowerCase() ||
+            f.name.toLowerCase() === paramName.toLowerCase()
+          ) {
+            let status = f.status;
+            if (f.reference_range) {
+              const m = f.reference_range.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
+              if (m) {
+                const low = parseFloat(m[1]);
+                const high = parseFloat(m[2]);
+                if (val < low) status = "low";
+                else if (val > high) status = "high";
+                else status = "normal";
+              }
+            }
+            return {
+              ...f,
+              value: val,
+              status,
+              explanation: `${f.name} value is ${val} ${f.unit || ""}.`,
+            };
+          }
+          return f;
+        }),
+      };
+    });
+    updateHistory(updated);
+  };
+
+  const handleAddNewPoint = () => {
+    const num = parseFloat(newPointVal);
+    if (isNaN(num)) return;
+    const date = newPointDate || new Date().toISOString().split("T")[0];
+    const canonical = selectedParam;
+    const currentUnit = series[0]?.unit || "mg/dL";
+    const currentRef = series[0]?.reference_range || null;
+
+    let status: "normal" | "high" | "low" = "normal";
+    if (currentRef) {
+      const m = currentRef.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
+      if (m) {
+        const low = parseFloat(m[1]);
+        const high = parseFloat(m[2]);
+        if (num < low) status = "low";
+        else if (num > high) status = "high";
+        else status = "normal";
+      }
+    }
+
+    const newReport: HistoricalReport = {
+      id: `manual-entry-${Date.now()}`,
+      date,
+      title: `Manual Test Entry (${date})`,
+      doctorNotes: `Recorded ${canonical} at ${num} ${currentUnit}.`,
+      findings: [
+        {
+          name: canonical,
+          value: num,
+          unit: currentUnit,
+          reference_range: currentRef,
+          status,
+          explanation: `${canonical} recorded at ${num} ${currentUnit}.`,
+        },
+      ],
+    };
+
+    const updated = [...history, newReport].sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    updateHistory(updated);
+    setNewPointVal("");
+  };
+
+  // Find all unique canonical finding names across all reports
   const allParams = Array.from(
     new Set(
-      history.flatMap((rep) => rep.findings.map((f) => f.name))
+      history.flatMap((rep) => rep.findings.map((f) => getCanonicalParam(f.name)))
     )
   );
 
-  // Extract trend series for the currently selected parameter
+  // If selectedParam is not found in allParams, default to first available
+  useEffect(() => {
+    if (allParams.length > 0 && !allParams.some((p) => p.toLowerCase() === selectedParam.toLowerCase())) {
+      const preferred = allParams.find((p) => p.toLowerCase().includes("glucose") || p.toLowerCase().includes("hba1c")) || allParams[0];
+      setSelectedParam(preferred);
+    }
+  }, [allParams, selectedParam]);
+
+  // Extract trend series for the currently selected parameter (using canonical matching)
   const series = history
     .map((rep) => {
       const match = rep.findings.find(
-        (f) => f.name.toLowerCase() === selectedParam.toLowerCase()
+        (f) => getCanonicalParam(f.name).toLowerCase() === selectedParam.toLowerCase() ||
+               f.name.toLowerCase() === selectedParam.toLowerCase()
       );
       if (!match || match.value === null) return null;
       return {
@@ -354,6 +510,9 @@ export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }
       status: string;
       explanation: string;
     }>;
+
+  // Chronologically sort the points so dates appear in chronological order
+  series.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   // Parse reference bounds from range string e.g. "12.0 - 15.5 g/dL"
   const refMatch = series[0]?.reference_range?.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
@@ -445,24 +604,48 @@ export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }
             </p>
           </div>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+          <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto">
+            <button
+              type="button"
+              onClick={handleClearHistory}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-red-500/10 border border-white/10 hover:border-red-500/30 text-xs font-medium text-[#a8b2c1] hover:text-red-400 transition-all cursor-pointer"
+              title="Clear all recorded history to start fresh"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              <span>Clear</span>
+            </button>
+
             <button
               type="button"
               onClick={handleResetSampleData}
-              className="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-[#a8b2c1] hover:text-white transition-all cursor-pointer"
-              title="Reset to 3-month sample tracking dataset"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-xs font-medium text-[#a8b2c1] hover:text-white transition-all cursor-pointer"
+              title="Reset to 20-report sample tracking dataset"
             >
               <RotateCcw className="w-3.5 h-3.5" />
-              <span>Reset Sample Journey</span>
+              <span>Reset Demo</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setIsEditingData((prev) => !prev)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-semibold transition-all cursor-pointer border ${
+                isEditingData
+                  ? "bg-[#AFACD0] text-[#080f11] border-[#AFACD0] shadow-md"
+                  : "bg-white/5 hover:bg-white/10 border-white/10 text-[#a8b2c1] hover:text-white"
+              }`}
+              title="Directly edit values or add data points to the graph"
+            >
+              <Edit3 className="w-3.5 h-3.5" />
+              <span>{isEditingData ? "Done Editing" : "Edit / Enter Data"}</span>
             </button>
 
             <button
               type="button"
               onClick={onAnalyzeNewReport}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#619BD0] to-[#AFACD0] text-xs font-bold text-white shadow-lg hover:opacity-95 transition-all cursor-pointer"
+              className="flex items-center gap-1.5 px-4 py-2 rounded-xl bg-gradient-to-r from-[#619BD0] to-[#AFACD0] text-xs font-bold text-white shadow-lg hover:opacity-95 transition-all cursor-pointer"
             >
               <Plus className="w-4 h-4" />
-              <span>Upload New Test</span>
+              <span>Upload Test</span>
             </button>
           </div>
         </div>
@@ -755,6 +938,137 @@ export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }
           </div>
         )}
       </div>
+
+      {/* ── Direct Value Editor & Manual Data Entry (Guarantee Graph Changes) ────────────────── */}
+      {isEditingData && (
+        <div className="glass-card p-6 sm:p-8 space-y-5 border border-[#AFACD0]/30 animate-fadeIn">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h3 className="text-base font-bold text-white flex items-center gap-2">
+                <Edit3 className="w-4 h-4 text-[#AFACD0]" />
+                <span>Direct Data Points Editor: {selectedParam}</span>
+              </h3>
+              <p className="text-xs text-[#a8b2c1]">
+                Change any values below or add new dates to see the graph trajectory adjust immediately in real-time.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsEditingData(false)}
+              className="text-xs px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-[#a8b2c1] hover:text-white transition-all cursor-pointer self-start sm:self-auto"
+            >
+              Close Editor
+            </button>
+          </div>
+
+          {/* Form to add a new data point */}
+          <div className="p-4 rounded-xl bg-[#080f11]/70 border border-white/10 space-y-3">
+            <h4 className="text-xs font-bold text-white flex items-center gap-2">
+              <Plus className="w-3.5 h-3.5 text-emerald-400" />
+              <span>Add New Reading Point to Graph</span>
+            </h4>
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-[#738094]">Date:</label>
+                <input
+                  type="date"
+                  value={newPointDate}
+                  onChange={(e) => setNewPointDate(e.target.value)}
+                  className="px-3 py-1.5 rounded-lg bg-black/50 border border-white/15 text-xs text-white focus:outline-none focus:border-[#AFACD0]"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-[#738094]">Value ({series[0]?.unit || "unit"}):</label>
+                <input
+                  type="number"
+                  step="any"
+                  value={newPointVal}
+                  onChange={(e) => setNewPointVal(e.target.value)}
+                  placeholder="e.g. 140"
+                  className="w-28 px-3 py-1.5 rounded-lg bg-black/50 border border-white/15 text-xs text-white focus:outline-none focus:border-[#AFACD0]"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleAddNewPoint}
+                disabled={!newPointVal}
+                className="px-4 py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-[#080f11] font-bold text-xs transition-all cursor-pointer disabled:opacity-40"
+              >
+                Add Point to Graph
+              </button>
+            </div>
+          </div>
+
+          {/* Table of existing series points */}
+          {series.length === 0 ? (
+            <p className="text-xs text-[#738094] italic">No records to edit for this biomarker.</p>
+          ) : (
+            <div className="overflow-x-auto max-h-80 overflow-y-auto">
+              <table className="w-full text-left text-xs text-[#a8b2c1]">
+                <thead>
+                  <tr className="border-b border-white/10 text-[#738094] uppercase tracking-wider text-[11px]">
+                    <th className="py-2.5 px-3">Date</th>
+                    <th className="py-2.5 px-3">Milestone / Title</th>
+                    <th className="py-2.5 px-3">Value ({series[0]?.unit || "unit"})</th>
+                    <th className="py-2.5 px-3">Reference Range</th>
+                    <th className="py-2.5 px-3">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5">
+                  {series.map((point) => (
+                    <tr key={point.reportId} className="hover:bg-white/[0.02]">
+                      <td className="py-2 px-3 font-mono text-white text-[11px] whitespace-nowrap">
+                        {point.date}
+                      </td>
+                      <td className="py-2 px-3 text-[#f0f2f8] max-w-xs truncate">
+                        {point.title}
+                      </td>
+                      <td className="py-2 px-3">
+                        <input
+                          type="number"
+                          step="any"
+                          defaultValue={point.value}
+                          onBlur={(e) => {
+                            const val = parseFloat(e.target.value);
+                            if (!isNaN(val) && val !== point.value) {
+                              handleUpdateFindingValue(point.reportId, selectedParam, val);
+                            }
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                              const val = parseFloat((e.target as HTMLInputElement).value);
+                              if (!isNaN(val)) {
+                                handleUpdateFindingValue(point.reportId, selectedParam, val);
+                              }
+                            }
+                          }}
+                          className="w-24 px-2.5 py-1 rounded bg-[#080f11] border border-white/20 text-white font-mono text-xs focus:outline-none focus:border-[#619BD0]"
+                        />
+                      </td>
+                      <td className="py-2 px-3 font-mono text-[11px] text-[#738094]">
+                        {point.reference_range || "N/A"}
+                      </td>
+                      <td className="py-2 px-3">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase ${
+                            point.status === "high"
+                              ? "bg-[#FE9458]/20 text-[#FE9458]"
+                              : point.status === "low"
+                              ? "bg-[#F7A99A]/20 text-[#F7A99A]"
+                              : "bg-emerald-500/20 text-emerald-400"
+                          }`}
+                        >
+                          {point.status}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
 
       {/* ── Multi-Report Comparison Matrix ─────────────────────────── */}
       <div className="glass-card p-6 sm:p-8 space-y-4">

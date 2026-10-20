@@ -22,16 +22,154 @@ import {
   Layers,
   TrendingUp,
 } from "lucide-react";
-import type { AnalysisResult, FindingStatus } from "../api/types";
+import type { AnalysisResult, Finding, FindingStatus } from "../api/types";
 import { submitFeedback } from "../api/client";
 
 interface ResultsDashboardProps {
   result: AnalysisResult;
   onNewAnalysis: () => void;
-  onViewTrends?: () => void;
+  onViewTrends?: (param?: string) => void;
 }
 
 type TabType = "all" | "findings" | "entities" | "text";
+
+const RATING_DESCRIPTIONS: Record<number, { title: string; color: string; desc: string }> = {
+  1: { title: "1 / 5 · Needs Improvement", color: "text-[#F7A99A]", desc: "Summary was difficult to follow or missed clinical details." },
+  2: { title: "2 / 5 · Fair", color: "text-[#FE9458]", desc: "Helpful basics, but explanations could be clearer." },
+  3: { title: "3 / 5 · Helpful", color: "text-[#AFACD0]", desc: "Solid plain-language breakdown of key lab results." },
+  4: { title: "4 / 5 · Very Good", color: "text-[#619BD0]", desc: "Great medical clarity, accurate glossary, and doctor questions." },
+  5: { title: "5 / 5 · Outstanding", color: "text-emerald-400", desc: "Exceptional accuracy, plain-language translation, and visual gauges!" },
+};
+
+/**
+ * Visual Range Bar Gauge for a single lab finding
+ */
+const FindingRangeGauge: React.FC<{
+  finding: Finding;
+  onViewTrend?: (name: string) => void;
+}> = ({ finding, onViewTrend }) => {
+  if (finding.value === null || !finding.reference_range) return null;
+
+  const match = finding.reference_range.match(/([0-9.]+)\s*-\s*([0-9.]+)/);
+  if (!match) return null;
+
+  const low = parseFloat(match[1]);
+  const high = parseFloat(match[2]);
+  if (isNaN(low) || isNaN(high) || high <= low) return null;
+
+  const val = finding.value;
+  const span = high - low;
+  const pad = span * 0.45;
+  const scaleMin = Math.max(0, Math.min(low - pad, val - pad * 0.5));
+  const scaleMax = Math.max(high + pad, val + pad * 0.5);
+  const totalSpan = scaleMax - scaleMin || 1;
+
+  // Percentage positions
+  const lowPct = Math.max(6, Math.min(88, ((low - scaleMin) / totalSpan) * 100));
+  const highPct = Math.max(lowPct + 8, Math.min(94, ((high - scaleMin) / totalSpan) * 100));
+  const valPct = Math.max(4, Math.min(96, ((val - scaleMin) / totalSpan) * 100));
+
+  let pinColor = "bg-emerald-400 text-[#080f11] shadow-[0_0_12px_rgba(52,211,153,0.5)]";
+  if (finding.status === "high") {
+    pinColor = "bg-[#FE9458] text-[#080f11] shadow-[0_0_12px_rgba(254,148,88,0.5)]";
+  } else if (finding.status === "low") {
+    pinColor = "bg-[#F7A99A] text-[#080f11] shadow-[0_0_12px_rgba(247,169,154,0.5)]";
+  }
+
+  return (
+    <div className="mt-3 pt-3 border-t border-white/5 space-y-2">
+      <div className="flex items-center justify-between text-[11px] text-[#a8b2c1]">
+        <span className="flex items-center gap-1 font-mono">
+          <span className="text-[#738094]">Reference Range:</span> {low} – {high} {finding.unit || ""}
+        </span>
+        {onViewTrend && (
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onViewTrend(finding.name);
+            }}
+            className="flex items-center gap-1 text-[11px] font-semibold text-[#619BD0] hover:text-[#AFACD0] transition-colors cursor-pointer"
+            title="View multi-month graph for this metric"
+          >
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>Track Trajectory Graph &rarr;</span>
+          </button>
+        )}
+      </div>
+
+      {/* Visual Horizontal Scale Bar */}
+      <div className="relative pt-6 pb-2">
+        {/* Value Pin Marker */}
+        <div
+          className="absolute top-0 -translate-x-1/2 flex flex-col items-center transition-all duration-300 pointer-events-none z-10"
+          style={{ left: `${valPct}%` }}
+        >
+          <span
+            className={`px-1.5 py-0.5 rounded text-[10px] font-bold font-mono whitespace-nowrap shadow-md ${pinColor}`}
+          >
+            {val} {finding.unit || ""}
+          </span>
+          <div
+            className={`w-0 h-0 border-l-[4px] border-l-transparent border-r-[4px] border-r-transparent border-t-[5px] ${
+              finding.status === "high"
+                ? "border-t-[#FE9458]"
+                : finding.status === "low"
+                ? "border-t-[#F7A99A]"
+                : "border-t-emerald-400"
+            }`}
+          />
+        </div>
+
+        {/* The Track with Zones */}
+        <div className="h-2.5 w-full rounded-full bg-[#080f11] border border-white/10 relative overflow-hidden flex">
+          {/* Low Zone */}
+          <div
+            style={{ width: `${lowPct}%` }}
+            className="h-full bg-gradient-to-r from-[#F7A99A]/20 to-[#F7A99A]/40 border-r border-white/10"
+            title={`Low zone (< ${low})`}
+          />
+          {/* Normal Zone */}
+          <div
+            style={{ width: `${highPct - lowPct}%` }}
+            className="h-full bg-gradient-to-r from-emerald-500/30 via-emerald-400/40 to-emerald-500/30 border-r border-white/10 shadow-[inset_0_0_8px_rgba(16,185,129,0.2)]"
+            title={`Normal target zone (${low} - ${high})`}
+          />
+          {/* High Zone */}
+          <div
+            style={{ width: `${100 - highPct}%` }}
+            className="h-full bg-gradient-to-r from-[#FE9458]/40 to-[#FE9458]/20"
+            title={`High zone (> ${high})`}
+          />
+        </div>
+
+        {/* Reference Tick Marks */}
+        <div className="relative w-full h-4 text-[10px] text-[#738094] font-mono mt-1">
+          <div
+            className="absolute top-0 -translate-x-1/2 flex flex-col items-center"
+            style={{ left: `${lowPct}%` }}
+          >
+            <div className="w-0.5 h-1.5 bg-white/20 mb-0.5" />
+            <span>{low}</span>
+          </div>
+          <div
+            className="absolute top-0 -translate-x-1/2 flex flex-col items-center"
+            style={{ left: `${highPct}%` }}
+          >
+            <div className="w-0.5 h-1.5 bg-white/20 mb-0.5" />
+            <span>{high}</span>
+          </div>
+          <div
+            className="absolute top-0 -translate-x-1/2 text-[9px] text-emerald-400/80 font-medium uppercase tracking-wider"
+            style={{ left: `${(lowPct + highPct) / 2}%` }}
+          >
+            Normal
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
 
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   result,
@@ -50,9 +188,18 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
   // Feedback state
   const [rating, setRating] = useState<number>(0);
+  const [hoverRating, setHoverRating] = useState<number>(0);
   const [comment, setComment] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [isSubmittingFeedback, setIsSubmittingFeedback] = useState(false);
+
+  // Reset feedback state if analyzing a new report
+  React.useEffect(() => {
+    setRating(0);
+    setHoverRating(0);
+    setComment("");
+    setFeedbackSubmitted(false);
+  }, [result.report_id]);
 
   // Filter key findings
   const filteredFindings = result.key_findings.filter((f) => {
@@ -196,7 +343,7 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
             {onViewTrends && (
               <button
                 type="button"
-                onClick={onViewTrends}
+                onClick={() => onViewTrends()}
                 className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#619BD0]/20 via-[#AFACD0]/20 to-[#FE9458]/20 hover:from-[#619BD0]/30 hover:to-[#AFACD0]/30 border border-[#619BD0]/40 text-xs font-bold text-white transition-all cursor-pointer shadow-md"
               >
                 <TrendingUp className="w-4 h-4 text-[#FE9458]" />
@@ -395,52 +542,90 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
               No findings match the selected status filter ({activeFindingFilter}).
             </div>
           ) : (
-            <div className="space-y-3">
-              {filteredFindings.map((finding, idx) => {
-                const isExpanded = expandedFinding === idx;
-                return (
-                  <div
-                    key={idx}
-                    className="rounded-xl bg-[#080f11]/50 border border-white/10 hover:border-[#AFACD0]/30 transition-all overflow-hidden"
+            <div className="space-y-4">
+              {/* Status Overview & Trend Link */}
+              <div className="p-4 rounded-xl bg-[#080f11]/60 border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <span className="text-xs text-[#a8b2c1] font-medium">Report Profile:</span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
+                    {result.key_findings.filter((f) => f.status === "normal").length} Normal
+                  </span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#FE9458]/20 text-[#FE9458] font-bold border border-[#FE9458]/30">
+                    {result.key_findings.filter((f) => f.status === "high").length} High
+                  </span>
+                  <span className="text-xs px-2.5 py-0.5 rounded-full bg-[#F7A99A]/20 text-[#F7A99A] font-bold border border-[#F7A99A]/30">
+                    {result.key_findings.filter((f) => f.status === "low").length} Low
+                  </span>
+                </div>
+
+                {onViewTrends && (
+                  <button
+                    type="button"
+                    onClick={() => onViewTrends()}
+                    className="flex items-center gap-1.5 text-xs px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-[#619BD0]/20 to-[#AFACD0]/20 hover:from-[#619BD0]/30 hover:to-[#AFACD0]/30 border border-[#619BD0]/40 text-white font-medium transition-all cursor-pointer"
                   >
+                    <TrendingUp className="w-3.5 h-3.5 text-[#619BD0]" />
+                    <span>View Multi-Report Health Tracker &rarr;</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Finding Cards with Visual Range Bar Gauges */}
+              <div className="space-y-3">
+                {filteredFindings.map((finding, idx) => {
+                  const isExpanded = expandedFinding === idx;
+                  return (
                     <div
-                      onClick={() => setExpandedFinding(isExpanded ? null : idx)}
-                      className="p-4 flex items-center justify-between cursor-pointer gap-4"
+                      key={idx}
+                      className="rounded-xl bg-[#080f11]/50 border border-white/10 hover:border-[#AFACD0]/30 transition-all overflow-hidden"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <div>
-                          <p className="text-sm font-bold text-white">
-                            {finding.name}
-                          </p>
-                          <p className="text-xs text-[#a8b2c1]">
-                            {finding.value !== null
-                              ? `${finding.value} ${finding.unit || ""}`
-                              : "Value N/A"}{" "}
-                            {finding.reference_range && (
-                              <span className="text-[#738094]">
-                                (Reference: {finding.reference_range})
-                              </span>
-                            )}
-                          </p>
+                      <div
+                        onClick={() => setExpandedFinding(isExpanded ? null : idx)}
+                        className="p-4 flex items-center justify-between cursor-pointer gap-4"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
+                          <div>
+                            <p className="text-sm font-bold text-white">
+                              {finding.name}
+                            </p>
+                            <p className="text-xs text-[#a8b2c1]">
+                              {finding.value !== null
+                                ? `${finding.value} ${finding.unit || ""}`
+                                : "Value N/A"}{" "}
+                              {finding.reference_range && (
+                                <span className="text-[#738094]">
+                                  (Reference: {finding.reference_range})
+                                </span>
+                              )}
+                            </p>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center gap-3 shrink-0">
+                          {getStatusBadge(finding.status)}
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-[#a8b2c1]" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-[#a8b2c1]" />
+                          )}
                         </div>
                       </div>
 
-                      <div className="flex items-center gap-3 shrink-0">
-                        {getStatusBadge(finding.status)}
-                        {isExpanded ? (
-                          <ChevronUp className="w-4 h-4 text-[#a8b2c1]" />
-                        ) : (
-                          <ChevronDown className="w-4 h-4 text-[#a8b2c1]" />
-                        )}
+                      {/* Visual Horizontal Range Bar Gauge */}
+                      <div className="px-4 pb-2">
+                        <FindingRangeGauge
+                          finding={finding}
+                          onViewTrend={onViewTrends}
+                        />
+                      </div>
+
+                      <div className="px-4 pb-4 text-xs text-[#a8b2c1] leading-relaxed border-t border-white/5 pt-3">
+                        <p className="text-white/90">{finding.explanation}</p>
                       </div>
                     </div>
-
-                    <div className="px-4 pb-4 text-xs text-[#a8b2c1] leading-relaxed border-t border-white/5 pt-3">
-                      <p className="text-white/90">{finding.explanation}</p>
-                    </div>
-                  </div>
-                );
-              })}
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
@@ -741,43 +926,80 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
 
       {/* ── User Feedback Widget ────────────────────────────────────────── */}
       <div className="glass-card p-6 sm:p-8 space-y-4 text-center max-w-xl mx-auto print:hidden">
-        <h3 className="text-base font-bold text-white">
-          Was this comprehensive medical summary helpful?
-        </h3>
-        <p className="text-xs text-[#a8b2c1]">
-          Your feedback helps us continuously improve plain-language medical accuracy and entity detection.
-        </p>
+        <div className="space-y-1">
+          <h3 className="text-base font-bold text-white flex items-center justify-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#AFACD0]" />
+            <span>Was this comprehensive medical summary helpful?</span>
+          </h3>
+          <p className="text-xs text-[#a8b2c1]">
+            Your rating helps us continuously refine medical accuracy and entity recognition.
+          </p>
+        </div>
 
-        {feedbackSubmitted ? (
-          <div className="p-4 rounded-xl bg-[#619BD0]/15 border border-[#619BD0]/30 text-[#619BD0] text-xs font-semibold flex items-center justify-center gap-2">
-            <Check className="w-4 h-4" />
-            <span>Thank you for your feedback!</span>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {/* Stars */}
-            <div className="flex items-center justify-center gap-2">
-              {[1, 2, 3, 4, 5].map((star) => (
+        {/* Dynamic Star Rating Controls */}
+        <div className="space-y-3 pt-2">
+          <div className="flex items-center justify-center gap-2">
+            {[1, 2, 3, 4, 5].map((star) => {
+              const activeVal = hoverRating || rating;
+              const isFilled = star <= activeVal;
+              return (
                 <button
                   key={star}
                   type="button"
-                  onClick={() => setRating(star)}
-                  className="p-1 transition-transform hover:scale-125 cursor-pointer"
+                  onMouseEnter={() => setHoverRating(star)}
+                  onMouseLeave={() => setHoverRating(0)}
+                  onClick={() => {
+                    setRating(star);
+                    if (feedbackSubmitted) setFeedbackSubmitted(false);
+                  }}
+                  className="p-1 transition-transform hover:scale-125 focus:outline-none cursor-pointer"
+                  title={`Rate ${star} of 5`}
                 >
                   <Star
-                    className={`w-7 h-7 ${
-                      star <= rating
-                        ? "fill-[#FE9458] text-[#FE9458] drop-shadow-[0_0_8px_rgba(254,148,88,0.5)]"
-                        : "text-[#738094]"
+                    className={`w-8 h-8 transition-colors ${
+                      isFilled
+                        ? "fill-[#FE9458] text-[#FE9458] drop-shadow-[0_0_10px_rgba(254,148,88,0.6)]"
+                        : "text-[#738094] hover:text-[#AFACD0]"
                     }`}
                   />
                 </button>
-              ))}
-            </div>
+              );
+            })}
+          </div>
 
-            {/* Comment input */}
-            {rating > 0 && (
-              <div className="space-y-3">
+          {/* Active Rating Text Label */}
+          {(hoverRating > 0 || rating > 0) && (
+            <div className="animate-fadeIn space-y-0.5">
+              <span className={`text-xs font-bold ${RATING_DESCRIPTIONS[hoverRating || rating]?.color}`}>
+                {RATING_DESCRIPTIONS[hoverRating || rating]?.title}
+              </span>
+              <p className="text-[11px] text-[#738094]">
+                {RATING_DESCRIPTIONS[hoverRating || rating]?.desc}
+              </p>
+            </div>
+          )}
+
+          {/* Submission confirmation or Comment Input */}
+          {feedbackSubmitted ? (
+            <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-white text-xs space-y-2 animate-fadeIn">
+              <div className="flex items-center justify-center gap-2 text-emerald-400 font-bold">
+                <Check className="w-4 h-4" />
+                <span>Thank you! Your rating of {rating}/5 stars was recorded.</span>
+              </div>
+              <p className="text-[11px] text-[#a8b2c1]">
+                Want to change your rating? Click any star above or{" "}
+                <button
+                  type="button"
+                  onClick={() => setFeedbackSubmitted(false)}
+                  className="text-[#619BD0] underline hover:text-[#AFACD0] cursor-pointer font-medium"
+                >
+                  click here to update feedback
+                </button>.
+              </p>
+            </div>
+          ) : (
+            rating > 0 && (
+              <div className="space-y-3 pt-2 animate-fadeIn max-w-md mx-auto">
                 <textarea
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
@@ -789,14 +1011,14 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
                   type="button"
                   disabled={isSubmittingFeedback}
                   onClick={handleSendFeedback}
-                  className="px-6 py-2 rounded-xl bg-[#AFACD0] text-[#080f11] font-bold text-xs hover:bg-white transition-all cursor-pointer shadow-md"
+                  className="w-full py-2 rounded-xl bg-gradient-to-r from-[#619BD0] to-[#AFACD0] text-[#080f11] font-bold text-xs hover:opacity-95 transition-all cursor-pointer shadow-md"
                 >
-                  {isSubmittingFeedback ? "Submitting..." : "Submit Feedback"}
+                  {isSubmittingFeedback ? "Submitting..." : `Submit ${rating} / 5 Star Rating`}
                 </button>
               </div>
-            )}
-          </div>
-        )}
+            )
+          )}
+        </div>
       </div>
 
       {/* ── Persistent Disclaimer Footer ────────────────────────────────── */}

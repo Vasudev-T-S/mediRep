@@ -3,8 +3,9 @@ import { Navbar } from "./components/Navbar";
 import { UploadCard } from "./components/UploadCard";
 import { ProgressCard } from "./components/ProgressCard";
 import { ResultsDashboard } from "./components/ResultsDashboard";
-import { TrendTracker } from "./components/TrendTracker";
+import { TrendTracker, DEFAULT_JOURNEY, STORAGE_KEY } from "./components/TrendTracker";
 import type { HistoricalReport } from "./components/TrendTracker";
+import { buildHistoryFromAnalysis } from "./utils/historyParser";
 import {
   getHealth,
   submitReport,
@@ -18,8 +19,6 @@ import type {
 
 type ViewMode = "upload" | "progress" | "results" | "trends";
 
-const STORAGE_KEY = "medirep_longitudinal_history";
-
 export default function App() {
   const [backendConnected, setBackendConnected] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("upload");
@@ -27,6 +26,22 @@ export default function App() {
   const [statusData, setStatusData] = useState<ReportStatusResponse | null>(null);
   const [result, setResult] = useState<AnalysisResult | null>(null);
 
+  const [history, setHistory] = useState<HistoricalReport[]>(() => {
+    try {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Fallback
+    }
+    return DEFAULT_JOURNEY;
+  });
+
+  const [selectedTrendParam, setSelectedTrendParam] = useState<string>("Fasting Glucose");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -52,22 +67,28 @@ export default function App() {
   const recordToHistory = (res: AnalysisResult) => {
     if (!res.key_findings || res.key_findings.length === 0) return;
     try {
-      const existingStr = localStorage.getItem(STORAGE_KEY);
-      const existing: HistoricalReport[] = existingStr ? JSON.parse(existingStr) : [];
-      
-      // Check if already in history
-      if (existing.some((r) => r.id === res.report_id)) return;
+      const extracted = buildHistoryFromAnalysis(res);
+      if (extracted.length === 0) return;
 
-      const newEntry: HistoricalReport = {
-        id: res.report_id,
-        date: new Date().toISOString().split("T")[0],
-        title: `Uploaded Lab Report (${res.report_type.toUpperCase()})`,
-        doctorNotes: res.overall_summary.slice(0, 160) + "...",
-        findings: res.key_findings,
-      };
-
-      const updated = [...existing, newEntry];
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+      setHistory((prev) => {
+        let updated: HistoricalReport[];
+        if (extracted.length > 1) {
+          // If the document contains multi-report data (e.g. past 20 reports),
+          // prioritize the uploaded dataset over the sample mock dataset!
+          updated = [...extracted];
+        } else {
+          // Single report upload: overwrite any record with the same ID or same date
+          const single = extracted[0];
+          const filtered = prev.filter(
+            (r) => r.id !== single.id && r.date !== single.date
+          );
+          updated = [...filtered, single];
+        }
+        // Keep sorted chronologically by date
+        updated.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+        return updated;
+      });
     } catch (err) {
       console.warn("Could not record to longitudinal history:", err);
     }
@@ -170,13 +191,19 @@ export default function App() {
           <ResultsDashboard
             result={result}
             onNewAnalysis={handleReset}
-            onViewTrends={() => setViewMode("trends")}
+            onViewTrends={(param) => {
+              if (param) setSelectedTrendParam(param);
+              setViewMode("trends");
+            }}
           />
         )}
 
         {viewMode === "trends" && (
           <TrendTracker
+            history={history}
+            onUpdateHistory={setHistory}
             onAnalyzeNewReport={handleReset}
+            initialParam={selectedTrendParam}
           />
         )}
       </main>

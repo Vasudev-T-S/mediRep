@@ -34,11 +34,11 @@ logger = logging.getLogger(__name__)
 
 
 VALUE_LINE = re.compile(
-    r"^\s*(?P<name>[A-Za-z][A-Za-z0-9 /().,_-]{1,70}?)\s*:\s*"
+    r"^\s*[-*•]?\s*(?P<name>[A-Za-z][A-Za-z0-9 /().,_-]{1,70}?)\s*:\s*"
     r"(?P<value>[+-]?\d+(?:\.\d+)?)\s*(?P<unit>[^\s(),;:]*)?(?P<tail>.*)$"
 )
 RANGE = re.compile(
-    r"(?:reference\s*(?:range)?|normal\s*range|ref\.?\s*range|range)"
+    r"(?:reference\s*(?:range)?|normal\s*range|ref\.?\s*range|range|ref)\b"
     r"\s*[:=]?\s*\(?\s*([+-]?\d+(?:\.\d+)?)\s*-\s*"
     r"([+-]?\d+(?:\.\d+)?)", re.IGNORECASE
 )
@@ -250,6 +250,30 @@ def extract_clinical_entities(text: str) -> tuple[list[DetectedEntity], list[Med
     return entities, medical_terms
 
 
+def compute_flesch_kincaid_grade(text: str) -> float:
+    """Calculate Flesch-Kincaid Grade Level dynamically based on word and syllable counts."""
+    words = re.findall(r"\b[A-Za-z]+\b", text)
+    sentences = [s for s in re.split(r"[.!?]+", text) if s.strip()]
+    if not words or not sentences:
+        return 6.8
+
+    def count_syllables(w: str) -> int:
+        w = w.lower()
+        if len(w) <= 3:
+            return 1
+        w = re.sub(r"(?:[^laeiouy]|ed|es|e)$", "", w)
+        w = re.sub(r"^y", "", w)
+        matches = re.findall(r"[aeiouy]{1,2}", w)
+        return max(1, len(matches))
+
+    total_syllables = sum(count_syllables(w) for w in words)
+    words_count = len(words)
+    sentences_count = len(sentences)
+
+    score = 0.39 * (words_count / sentences_count) + 11.8 * (total_syllables / words_count) - 15.59
+    return round(max(4.0, min(14.0, score)), 1)
+
+
 def generate_lifestyle_and_questions(
     findings: list[Finding],
     entities: list[DetectedEntity],
@@ -400,7 +424,9 @@ def build_report_result(
             model="biomedical-ner-pipeline-v2",
             pipeline_version="0.4.0",
             processing_seconds=round(max(0.01, processing_seconds), 3),
-            readability_grade=7.2,
+            readability_grade=compute_flesch_kincaid_grade(
+                summary + " " + " ".join(f.explanation for f in findings[:6])
+            ),
             warnings=[],
         ),
     )
