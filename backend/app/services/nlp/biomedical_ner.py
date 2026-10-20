@@ -34,11 +34,11 @@ logger = logging.getLogger(__name__)
 
 
 VALUE_LINE = re.compile(
-    r"^\s*(?P<name>[A-Za-z][A-Za-z0-9 /().,_-]{1,70}?)\s*:\s*"
+    r"^\s*[-*•]?\s*(?P<name>[A-Za-z][A-Za-z0-9 /().,_-]{1,70}?)\s*:\s*"
     r"(?P<value>[+-]?\d+(?:\.\d+)?)\s*(?P<unit>[^\s(),;:]*)?(?P<tail>.*)$"
 )
 RANGE = re.compile(
-    r"(?:reference\s*(?:range)?|normal\s*range|ref\.?\s*range|range)"
+    r"(?:reference\s*(?:range)?|normal\s*range|ref\.?\s*range|range|ref)\b"
     r"\s*[:=]?\s*\(?\s*([+-]?\d+(?:\.\d+)?)\s*-\s*"
     r"([+-]?\d+(?:\.\d+)?)", re.IGNORECASE
 )
@@ -55,6 +55,8 @@ CLINICAL_VOCABULARY: dict[str, tuple[str, str]] = {
     "acl tear": ("DISEASE", "A tear of the anterior cruciate ligament in the knee."),
     "dentigerous cyst": ("DISEASE", "An epithelial-lined sac that develops around the crown of an unerupted tooth."),
     "diabetes": ("DISEASE", "A chronic condition that affects how the body processes blood sugar (glucose)."),
+    "type 2 diabetes": ("DISEASE", "A metabolic condition characterized by insulin resistance and elevated blood sugar."),
+    "prediabetes": ("DISEASE", "Blood sugar levels that are higher than normal but not yet in diabetic range."),
     "hypertension": ("DISEASE", "Abnormally high blood pressure that can stress the heart and blood vessels."),
     "cardiomegaly": ("DISEASE", "Enlargement of the heart detected by imaging or physical exam."),
     "pneumonia": ("DISEASE", "An infection that inflames the air sacs in one or both lungs."),
@@ -81,6 +83,10 @@ CLINICAL_VOCABULARY: dict[str, tuple[str, str]] = {
     "cough": ("SYMPTOM", "A sudden, forceful expulsion of air from the lungs."),
     "fatigue": ("SYMPTOM", "Extreme tiredness or exhaustion."),
     "headache": ("SYMPTOM", "Pain arising from the head or upper neck of the body."),
+    "hyperglycemia": ("SYMPTOM", "An abnormally elevated glucose concentration in the blood."),
+    "hypoglycemia": ("SYMPTOM", "Abnormally low blood sugar level that may trigger shakiness, sweating, or dizziness."),
+    "polydipsia": ("SYMPTOM", "Excessive and unquenchable thirst, commonly associated with elevated blood sugar."),
+    "polyuria": ("SYMPTOM", "Excessive or frequent urination, often seen with uncontrolled blood sugar."),
 
     # MEDICATIONS
     "methadone": ("MEDICATION", "An opioid medication used for pain management and maintenance therapy."),
@@ -134,7 +140,12 @@ COMMON_LAB_TERMS: dict[str, str] = {
     "white blood cell": "White blood cells, which fight infections and protect the immune system.",
     "platelets": "Small blood cells that stick together to form clots and stop bleeding.",
     "glucose": "The main type of sugar in blood, providing energy for body cells.",
+    "blood glucose": "The concentration of sugar (glucose) present in your bloodstream.",
+    "blood sugar": "The amount of glucose moving through the circulatory system to provide cellular fuel.",
     "fasting glucose": "Blood sugar measured after not eating for at least 8 hours.",
+    "postprandial glucose": "Blood sugar concentration measured approximately two hours after consuming a meal.",
+    "hba1c": "Glycated hemoglobin, which reflects your average blood sugar levels over the past 2 to 3 months.",
+    "estimated average glucose": "The calculated average daily blood glucose level derived directly from an HbA1c measurement.",
     "creatinine": "A chemical waste product generated from muscle metabolism and cleared by the kidneys.",
     "bun": "Blood Urea Nitrogen, reflecting how well the kidneys and liver are functioning.",
     "potassium": "An essential mineral electrolyte that helps muscles contract and supports heart rhythm.",
@@ -237,6 +248,30 @@ def extract_clinical_entities(text: str) -> tuple[list[DetectedEntity], list[Med
                 ))
 
     return entities, medical_terms
+
+
+def compute_flesch_kincaid_grade(text: str) -> float:
+    """Calculate Flesch-Kincaid Grade Level dynamically based on word and syllable counts."""
+    words = re.findall(r"\b[A-Za-z]+\b", text)
+    sentences = [s for s in re.split(r"[.!?]+", text) if s.strip()]
+    if not words or not sentences:
+        return 6.8
+
+    def count_syllables(w: str) -> int:
+        w = w.lower()
+        if len(w) <= 3:
+            return 1
+        w = re.sub(r"(?:[^laeiouy]|ed|es|e)$", "", w)
+        w = re.sub(r"^y", "", w)
+        matches = re.findall(r"[aeiouy]{1,2}", w)
+        return max(1, len(matches))
+
+    total_syllables = sum(count_syllables(w) for w in words)
+    words_count = len(words)
+    sentences_count = len(sentences)
+
+    score = 0.39 * (words_count / sentences_count) + 11.8 * (total_syllables / words_count) - 15.59
+    return round(max(4.0, min(14.0, score)), 1)
 
 
 def generate_lifestyle_and_questions(
@@ -389,7 +424,9 @@ def build_report_result(
             model="biomedical-ner-pipeline-v2",
             pipeline_version="0.4.0",
             processing_seconds=round(max(0.01, processing_seconds), 3),
-            readability_grade=7.2,
+            readability_grade=compute_flesch_kincaid_grade(
+                summary + " " + " ".join(f.explanation for f in findings[:6])
+            ),
             warnings=[],
         ),
     )

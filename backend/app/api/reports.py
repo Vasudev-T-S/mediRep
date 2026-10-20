@@ -197,6 +197,36 @@ async def get_sample_reports():
                 "AST: 28 U/L (Reference Range: 10 - 40 U/L)\n"
             ),
         },
+        {
+            "id": "sample_blood_sugar_history",
+            "title": "Diabetes Glycemic Panel (20 Historical Reports)",
+            "category": "Endocrine & Diabetes",
+            "badge": "20 Blood Reports",
+            "description": "Fasting Glucose, HbA1c, Postprandial Glucose, and 20-report longitudinal progression audit (2025-2026).",
+            "text": (
+                "DIABETES & GLYCEMIC MONITORING REPORT\n"
+                "Patient: Robert Davis | Age: 48 | Sex: Male\n"
+                "History: Type 2 Diabetes Mellitus managed with Metformin 500mg BID.\n\n"
+                "CURRENT GLYCEMIC & METABOLIC PANEL (REPORT #20):\n"
+                "Fasting Blood Glucose: 124 mg/dL (Reference Range: 70 - 99 mg/dL)\n"
+                "Postprandial Glucose: 162 mg/dL (Reference Range: 70 - 140 mg/dL)\n"
+                "HbA1c: 6.7 % (Reference Range: 4.0 - 5.6 %)\n"
+                "Estimated Average Glucose: 146 mg/dL (Reference Range: 70 - 126 mg/dL)\n"
+                "Serum Creatinine: 0.9 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)\n"
+                "Blood Urea Nitrogen: 15 mg/dL (Reference Range: 7 - 20 mg/dL)\n"
+                "Total Cholesterol: 195 mg/dL (Reference Range: 125 - 200 mg/dL)\n"
+                "Triglycerides: 165 mg/dL (Reference Range: 0 - 150 mg/dL)\n\n"
+                "AUDIT SUMMARY OF PAST 20 BLOOD SUGAR REPORTS (2025 - 2026):\n"
+                "- Report #01 (10-Jan-2025): Fasting Glucose: 178 mg/dL | HbA1c: 9.4% | PP: 245 mg/dL [Baseline]\n"
+                "- Report #05 (20-May-2025): Fasting Glucose: 154 mg/dL | HbA1c: 8.2% | PP: 208 mg/dL [Metformin BID]\n"
+                "- Report #10 (05-Nov-2025): Fasting Glucose: 144 mg/dL | HbA1c: 7.7% | PP: 194 mg/dL [Holiday Intake]\n"
+                "- Report #15 (28-Apr-2026): Fasting Glucose: 128 mg/dL | HbA1c: 6.9% | PP: 170 mg/dL [Sub-7% HbA1c]\n"
+                "- Report #20 (19-Oct-2026): Fasting Glucose: 124 mg/dL | HbA1c: 6.7% | PP: 162 mg/dL [Target Approached]\n\n"
+                "IMPRESSION:\n"
+                "Exceptional longitudinal progress across 20 consecutive blood reports over 22 months. "
+                "Overall HbA1c declined from 9.4% to 6.7% (-2.7%). Fasting blood sugar decreased from 178 to 124 mg/dL (-54 mg/dL).\n"
+            ),
+        },
     ]
 
 
