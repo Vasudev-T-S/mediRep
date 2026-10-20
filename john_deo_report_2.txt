@@ -1,0 +1,62 @@
+==============================================================
+             VALLEY GENERAL CLINICAL LABORATORY
+ 1240 Health Parkway, Suite 210 | Phone: +1 (555) 382-9104
+==============================================================
+            COMPREHENSIVE METABOLIC & GLYCEMIC PANEL
+             *** REPORT #2: 3-MONTH THERAPEUTIC AUDIT ***
+
+Patient Name : John Deo
+Age          : 45 Years
+Gender       : Male
+Patient ID   : JD-45091
+Report ID    : LAB-2026-0418B
+Collection Date : 18-Apr-2026 08:15 AM
+Reporting Date  : 18-Apr-2026 01:40 PM
+Referring Dr.   : Dr. Marcus Reed, MD (Internal Medicine)
+Fasting Status  : Fasting (12 Hours)
+
+--------------------------------------------------------------
+CLINICAL NOTES & REASON FOR VISIT
+--------------------------------------------------------------
+Interval History: 45-year-old male returns for scheduled 3-month follow-up after starting Metformin.
+Patient reports improved energy, resolution of daytime somnolence, and decreased thirst.
+Current Medications: Metformin 500 mg twice daily with meals. No adverse gastrointestinal symptoms.
+Adherence to diet: Replaced refined sodas with water, walking 30 minutes 4 days/week.
+Weight: Down 2.8 kg (Current BMI: 28.5 kg/m2). Blood pressure: 132/84 mmHg.
+
+--------------------------------------------------------------
+LABORATORY FINDINGS & TEST RESULTS
+--------------------------------------------------------------
+Test Name: Value Unit (Reference Range: Low - High Unit)
+
+Fasting Blood Glucose: 140 mg/dL (Reference Range: 70 - 99 mg/dL)
+Postprandial Glucose: 194 mg/dL (Reference Range: 70 - 140 mg/dL)
+HbA1c: 7.7 % (Reference Range: 4.0 - 5.6 %)
+Estimated Average Glucose: 174 mg/dL (Reference Range: 70 - 126 mg/dL)
+Total Cholesterol: 218 mg/dL (Reference Range: 125 - 200 mg/dL)
+Triglycerides: 210 mg/dL (Reference Range: 0 - 150 mg/dL)
+HDL Cholesterol: 39 mg/dL (Reference Range: 40 - 60 mg/dL)
+LDL Cholesterol: 137 mg/dL (Reference Range: 0 - 100 mg/dL)
+Serum Creatinine: 1.0 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)
+Blood Urea Nitrogen: 15 mg/dL (Reference Range: 7 - 20 mg/dL)
+Alanine Aminotransferase (ALT): 44 U/L (Reference Range: 7 - 45 U/L)
+Aspartate Aminotransferase (AST): 32 U/L (Reference Range: 8 - 40 U/L)
+Hemoglobin: 15.0 g/dL (Reference Range: 13.5 - 17.5 g/dL)
+WBC: 6.9 K/uL (Reference Range: 4.5 - 11.0 K/uL)
+Platelets: 255 K/uL (Reference Range: 150 - 450 K/uL)
+
+--------------------------------------------------------------
+DIAGNOSTIC IMPRESSION & PHYSICIAN RECOMMENDATIONS
+--------------------------------------------------------------
+1. Favorable initial glycemic response: HbA1c declined from 8.6% to 7.7% (-0.9%).
+2. Fasting glucose reduced from 162 mg/dL to 140 mg/dL (-22 mg/dL).
+3. Modest improvement in lipid profile: Triglycerides improved from 255 to 210 mg/dL; LDL decreased from 155 to 137 mg/dL.
+4. ALT normalized to 44 U/L (previously 52 U/L), indicating reduced hepatic lipid accumulation.
+5. Renal function remains completely stable (Creatinine 1.0 mg/dL).
+
+Plan:
+- Titrate Metformin to 850 mg orally twice daily with meals to optimize glycemic target.
+- Continue calorie-restricted Mediterranean-style diet; increase aerobic exercise to 180 min/week.
+- Add resistance training twice weekly.
+- Schedule 6-month comprehensive metabolic review in July 2026.
+==============================================================

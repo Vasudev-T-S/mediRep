@@ -49,6 +49,18 @@ export const AuthModal: React.FC = () => {
     }
   };
 
+  const handleJohnDeoLogin = async () => {
+    setError(null);
+    setSubmitting(true);
+    try {
+      await login("john.deo@example.com", "Password123!");
+    } catch (err: any) {
+      setError(err?.message || "Could not log in as John Deo.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-md animate-fade-in">
       <div
@@ -81,7 +93,7 @@ export const AuthModal: React.FC = () => {
           </p>
         </div>
 
-        {/* Quick 1-Click Demo Patient Button */}
+        {/* Quick 1-Click Demo Patients */}
         <div className="mb-6 p-4 rounded-xl border border-[var(--color-orange-glow)] bg-[rgba(254,148,88,0.08)]">
           <div className="flex items-start gap-3">
             <div className="mt-0.5 text-[var(--color-orange)]">
@@ -91,19 +103,31 @@ export const AuthModal: React.FC = () => {
             </div>
             <div className="flex-1">
               <h4 className="text-xs font-semibold text-[var(--color-orange)] uppercase tracking-wider">
-                1-Click Instant Demo
+                1-Click Instant Patients
               </h4>
               <p className="text-xs text-[var(--color-text-sub)] mt-0.5 leading-relaxed">
-                Log in as <strong>Robert M. Davis</strong> (48yo, T2DM) with <strong>20 historical blood reports</strong> pre-loaded.
+                Choose a pre-configured patient profile with verified historical reports:
               </p>
-              <button
-                type="button"
-                onClick={handleDemoLogin}
-                disabled={submitting}
-                className="mt-2.5 w-full py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--color-orange)] text-[#080f11] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 shadow-sm"
-              >
-                {submitting ? "Loading Patient..." : "Explore Demo Patient Account →"}
-              </button>
+              <div className="mt-2.5 flex flex-col gap-2">
+                <button
+                  type="button"
+                  onClick={handleJohnDeoLogin}
+                  disabled={submitting}
+                  className="w-full py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--color-lavender)] text-[#080f11] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-between shadow-sm cursor-pointer"
+                >
+                  <span className="font-semibold">John Deo (45yo, Male)</span>
+                  <span className="text-[10px] bg-black/20 px-1.5 py-0.5 rounded">4 Reports →</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDemoLogin}
+                  disabled={submitting}
+                  className="w-full py-1.5 px-3 rounded-lg text-xs font-medium bg-[var(--color-orange)] text-[#080f11] hover:brightness-110 active:scale-[0.98] transition-all flex items-center justify-between shadow-sm cursor-pointer"
+                >
+                  <span className="font-semibold">Robert M. Davis (48yo, Male)</span>
+                  <span className="text-[10px] bg-black/20 px-1.5 py-0.5 rounded">20 Reports →</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

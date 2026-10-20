@@ -1,0 +1,61 @@
+==============================================================
+             VALLEY GENERAL CLINICAL LABORATORY
+ 1240 Health Parkway, Suite 210 | Phone: +1 (555) 382-9104
+==============================================================
+            COMPREHENSIVE METABOLIC & GLYCEMIC PANEL
+             *** REPORT #1: INITIAL BASELINE EVALUATION ***
+
+Patient Name : John Deo
+Age          : 45 Years
+Gender       : Male
+Patient ID   : JD-45091
+Report ID    : LAB-2026-0115A
+Collection Date : 15-Jan-2026 08:30 AM
+Reporting Date  : 15-Jan-2026 02:15 PM
+Referring Dr.   : Dr. Marcus Reed, MD (Internal Medicine)
+Fasting Status  : Fasting (12 Hours)
+
+--------------------------------------------------------------
+CLINICAL NOTES & REASON FOR VISIT
+--------------------------------------------------------------
+Reason for Exam: 45-year-old male presenting for annual executive physical.
+Patient reports generalized fatigue, mild polydipsia (increased thirst), and sedentary lifestyle.
+Blood pressure seated: 138/88 mmHg. BMI: 29.4 kg/m2 (overweight).
+Denies chest pain, dyspnea, or vision changes.
+Family History: Father had Type 2 Diabetes Mellitus and hypertension.
+
+--------------------------------------------------------------
+LABORATORY FINDINGS & TEST RESULTS
+--------------------------------------------------------------
+Test Name: Value Unit (Reference Range: Low - High Unit)
+
+Fasting Blood Glucose: 162 mg/dL (Reference Range: 70 - 99 mg/dL)
+Postprandial Glucose: 228 mg/dL (Reference Range: 70 - 140 mg/dL)
+HbA1c: 8.6 % (Reference Range: 4.0 - 5.6 %)
+Estimated Average Glucose: 200 mg/dL (Reference Range: 70 - 126 mg/dL)
+Total Cholesterol: 242 mg/dL (Reference Range: 125 - 200 mg/dL)
+Triglycerides: 255 mg/dL (Reference Range: 0 - 150 mg/dL)
+HDL Cholesterol: 36 mg/dL (Reference Range: 40 - 60 mg/dL)
+LDL Cholesterol: 155 mg/dL (Reference Range: 0 - 100 mg/dL)
+Serum Creatinine: 1.0 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)
+Blood Urea Nitrogen: 16 mg/dL (Reference Range: 7 - 20 mg/dL)
+Alanine Aminotransferase (ALT): 52 U/L (Reference Range: 7 - 45 U/L)
+Aspartate Aminotransferase (AST): 38 U/L (Reference Range: 8 - 40 U/L)
+Hemoglobin: 14.8 g/dL (Reference Range: 13.5 - 17.5 g/dL)
+WBC: 7.2 K/uL (Reference Range: 4.5 - 11.0 K/uL)
+Platelets: 260 K/uL (Reference Range: 150 - 450 K/uL)
+
+--------------------------------------------------------------
+DIAGNOSTIC IMPRESSION & PHYSICIAN RECOMMENDATIONS
+--------------------------------------------------------------
+1. New diagnosis of Type 2 Diabetes Mellitus with significant hyperglycemia (HbA1c 8.6%, Fasting Glucose 162 mg/dL).
+2. Mixed dyslipidemia characterized by elevated triglycerides (255 mg/dL), elevated LDL (155 mg/dL), and low HDL (36 mg/dL).
+3. Mild elevation of ALT (52 U/L) consistent with hepatic steatosis (metabolic dysfunction-associated steatotic liver).
+4. Renal parameters (creatinine 1.0 mg/dL, BUN 16 mg/dL) are preserved.
+
+Plan:
+- Initiate Metformin 500 mg orally once daily with evening meal, increasing to twice daily after 2 weeks as tolerated.
+- Dietary referral for medical nutrition therapy: low glycemic index diet, eliminate sweetened beverages, reduce refined carbs.
+- Prescribe 150 minutes/week of moderate physical activity (brisk walking, cycling).
+- Schedule follow-up visit in 3 months for repeat HbA1c and lipid panel (April 2026).
+==============================================================

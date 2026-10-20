@@ -230,6 +230,47 @@ async def get_sample_reports():
                 "Overall HbA1c declined from 9.4% to 6.7% (-2.7%). Fasting blood sugar decreased from 178 to 124 mg/dL (-54 mg/dL).\n"
             ),
         },
+        {
+            "id": "sample_john_deo_progression",
+            "title": "John Deo - 4 Quarterly Reports (Age 45, Male)",
+            "category": "Endocrine & Metabolic",
+            "badge": "4 Progress Reports",
+            "description": "Fasting Glucose, HbA1c, Lipid Panel, and 4 quarterly milestones tracking John Deo's recovery over 9 months.",
+            "text": (
+                "LONGITUDINAL CLINICAL REPORT & 4-VISIT PROGRESSION\n"
+                "Patient Name: John Deo | Age: 45 Years | Gender: Male\n"
+                "Patient ID: JD-45091 | Collection Date: 15-Oct-2026\n"
+                "History: 45-year-old male evaluated across 4 quarterly consultations (Jan to Oct 2026).\n\n"
+                "CURRENT LABORATORY PANEL (REPORT #4 - 15-OCT-2026):\n"
+                "Fasting Blood Glucose: 104 mg/dL (Reference Range: 70 - 99 mg/dL)\n"
+                "Postprandial Glucose: 142 mg/dL (Reference Range: 70 - 140 mg/dL)\n"
+                "HbA1c: 6.3 % (Reference Range: 4.0 - 5.6 %)\n"
+                "Estimated Average Glucose: 134 mg/dL (Reference Range: 70 - 126 mg/dL)\n"
+                "Total Cholesterol: 182 mg/dL (Reference Range: 125 - 200 mg/dL)\n"
+                "Triglycerides: 144 mg/dL (Reference Range: 0 - 150 mg/dL)\n"
+                "HDL Cholesterol: 47 mg/dL (Reference Range: 40 - 60 mg/dL)\n"
+                "LDL Cholesterol: 106 mg/dL (Reference Range: 0 - 100 mg/dL)\n"
+                "Serum Creatinine: 0.9 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)\n"
+                "Blood Urea Nitrogen: 14 mg/dL (Reference Range: 7 - 20 mg/dL)\n"
+                "Alanine Aminotransferase (ALT): 28 U/L (Reference Range: 7 - 45 U/L)\n"
+                "Aspartate Aminotransferase (AST): 25 U/L (Reference Range: 8 - 40 U/L)\n"
+                "Hemoglobin: 15.2 g/dL (Reference Range: 13.5 - 17.5 g/dL)\n"
+                "WBC: 6.6 K/uL (Reference Range: 4.5 - 11.0 K/uL)\n"
+                "Platelets: 245 K/uL (Reference Range: 150 - 450 K/uL)\n\n"
+                "CHRONOLOGICAL AUDIT: 4 HISTORICAL CLINICAL REPORTS (2026):\n"
+                "- Report #01 [15-Jan-2026] - INITIAL BASELINE EVALUATION\n"
+                "  Fasting Blood Glucose: 162 mg/dL | HbA1c: 8.6 % | PP: 228 mg/dL | Triglycerides: 255 mg/dL [Baseline High]\n"
+                "- Report #02 [18-Apr-2026] - 3-MONTH THERAPEUTIC AUDIT\n"
+                "  Fasting Blood Glucose: 140 mg/dL | HbA1c: 7.7 % | PP: 194 mg/dL | Triglycerides: 210 mg/dL [Metformin 850mg]\n"
+                "- Report #03 [20-Jul-2026] - 6-MONTH MID-YEAR PROGRESSION\n"
+                "  Fasting Blood Glucose: 122 mg/dL | HbA1c: 7.0 % | PP: 168 mg/dL | Triglycerides: 172 mg/dL [5.6kg Weight Loss]\n"
+                "- Report #04 [15-Oct-2026] - TARGET CONSOLIDATION & AUDIT\n"
+                "  Fasting Blood Glucose: 104 mg/dL | HbA1c: 6.3 % | PP: 142 mg/dL | Triglycerides: 144 mg/dL [Target Controlled]\n\n"
+                "FINAL CLINICAL IMPRESSION:\n"
+                "Exceptional response over 9 months of therapy. HbA1c reduced from 8.6% to 6.3% (-2.3%). "
+                "Fasting glucose reduced from 162 to 104 mg/dL (-58 mg/dL). Triglycerides normalized to 144 mg/dL.\n"
+            ),
+        },
     ]
 
 
