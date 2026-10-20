@@ -189,3 +189,23 @@ export function buildHistoryFromAnalysis(res: AnalysisResult): HistoricalReport[
 
   return resultList;
 }
+
+/**
+ * Converts a database PastRecord into the HistoricalReport format used by TrendTracker.
+ */
+export function pastRecordToHistoricalReport(rec: import("../api/types").PastRecord): HistoricalReport {
+  return {
+    id: rec.id,
+    date: rec.date,
+    title: rec.title,
+    doctorNotes: rec.doctor_notes || undefined,
+    findings: (rec.findings || []).map((f) => ({
+      name: f.name || f.metric_name || "Metric",
+      value: f.value ?? null,
+      unit: f.unit ?? null,
+      reference_range: f.reference_range ?? null,
+      status: (f.status as FindingStatus) || "normal",
+      explanation: f.explanation || "",
+    })),
+  };
+}

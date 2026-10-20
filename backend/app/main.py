@@ -11,7 +11,9 @@ from typing import AsyncGenerator
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.auth import router as auth_router
 from app.api.health import router as health_router
+from app.api.records import router as records_router
 from app.api.reports import router as reports_router
 from app.config import settings
 from app.db.session import init_db
@@ -48,3 +50,5 @@ app.add_middleware(
 # ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(health_router)
 app.include_router(reports_router)
+app.include_router(auth_router)
+app.include_router(records_router)

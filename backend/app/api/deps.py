@@ -83,3 +83,42 @@ def validate_file_content(filename: str, mime_type: str | None, content: bytes) 
         return "clinical_note"
 
     return "lab"  # default to lab
+
+
+from fastapi import Depends
+from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.security import decode_access_token
+from app.db.models import User
+from app.db.session import get_db
+
+auth_scheme = HTTPBearer(auto_error=False)
+
+
+async def get_optional_user(
+    credentials: HTTPAuthorizationCredentials | None = Depends(auth_scheme),
+    db: AsyncSession = Depends(get_db),
+) -> User | None:
+    """Retrieve the current user if a valid Bearer token is provided, otherwise None."""
+    if not credentials or not credentials.credentials:
+        return None
+    payload = decode_access_token(credentials.credentials)
+    if not payload or "sub" not in payload:
+        return None
+    user_id = str(payload["sub"])
+    user = await db.get(User, user_id)
+    return user
+
+
+async def get_current_user(
+    user: User | None = Depends(get_optional_user),
+) -> User:
+    """Require an authenticated user or raise 401 Unauthorized."""
+    if user is None:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Authentication required. Please sign in to access your records.",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    return user

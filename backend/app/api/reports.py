@@ -27,8 +27,8 @@ from fastapi import (
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.api.deps import validate_file_content
-from app.db.models import Feedback, Report
+from app.api.deps import get_optional_user, validate_file_content
+from app.db.models import Feedback, Report, User
 from app.db.session import get_db
 from app.schemas.analysis import AnalysisResult
 from app.schemas.report import (
@@ -88,6 +88,7 @@ def extract_report_text(filename: str, content: bytes) -> str:
 async def submit_report(
     background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
+    current_user: User | None = Depends(get_optional_user),
     db: AsyncSession = Depends(get_db),
 ) -> SubmitReportResponse:
     """Accept an uploaded report (PDF, PNG, JPG, TXT), validate it, and start background processing."""
@@ -104,6 +105,8 @@ async def submit_report(
 
     # Note: File content is NEVER saved to disk or DB per privacy rule in section 9.
     report = Report(
+        user_id=current_user.id if current_user else None,
+        title=filename,
         status=ReportStatus.queued.value,
         stage=ReportStage.uploaded.value,
         progress=0.0,

@@ -5,6 +5,7 @@ medical term explanations, lifestyle guidance, and doctor questions.
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import re
 import time
@@ -13,7 +14,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 
-from app.db.models import Report
+from app.db.models import PastRecord, Report
 from app.db.session import AsyncSessionLocal
 from app.schemas.analysis import (
     AnalysisMode,
@@ -497,6 +498,37 @@ async def run_report_pipeline(report_id: str, report_type: str, text: str) -> No
             record.progress = 1.0
             record.result_json = result.model_dump_json()
             record.completed_at = datetime.now(UTC)
+
+            if record.user_id:
+                # Extract date if mentioned in text (YYYY-MM-DD or DD-Mon-YYYY) or default to today
+                date_str = datetime.now(UTC).strftime("%Y-%m-%d")
+                date_match = re.search(r"\b(20\d{2}[-/]\d{1,2}[-/]\d{1,2})\b", text)
+                if date_match:
+                    date_str = date_match.group(1).replace("/", "-")
+                
+                findings_data = [
+                    {
+                        "metric_name": f.name,
+                        "value": f.value,
+                        "unit": f.unit,
+                        "reference_range": f.reference_range,
+                        "status": f.status.value if hasattr(f.status, "value") else str(f.status),
+                    }
+                    for f in findings
+                ]
+
+                past_record = PastRecord(
+                    user_id=record.user_id,
+                    report_id=record.id,
+                    date=date_str,
+                    title=record.title or f"{report_type.upper()} Report",
+                    doctor_notes=f"Auto-analyzed on {datetime.now(UTC).strftime('%d %b %Y')}",
+                    report_type=report_type,
+                    findings_json=json.dumps(findings_data),
+                    summary=f"Contains {len(findings)} lab metric(s) and {len(entities)} clinical term(s).",
+                )
+                db.add(past_record)
+
             await db.commit()
     except Exception as exc:
         logger.exception("Report analysis failed for report %s", report_id)

@@ -33,10 +33,29 @@ AsyncSessionLocal = async_sessionmaker(
 )
 
 
+from sqlalchemy import text
+
+
 async def init_db() -> None:
-    """Initialize DB tables asynchronously on app startup."""
+    """Initialize DB tables asynchronously on app startup and ensure schema compatibility."""
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        # Check and migrate columns on SQLite if reports table already existed
+        def _check_and_add_columns(sync_conn):
+            try:
+                res = sync_conn.execute(text("PRAGMA table_info(reports)"))
+                existing_cols = {row[1] for row in res.fetchall()}
+                if "user_id" not in existing_cols:
+                    sync_conn.execute(text("ALTER TABLE reports ADD COLUMN user_id VARCHAR(36)"))
+                if "title" not in existing_cols:
+                    sync_conn.execute(text("ALTER TABLE reports ADD COLUMN title VARCHAR(200)"))
+                if "collected_date" not in existing_cols:
+                    sync_conn.execute(text("ALTER TABLE reports ADD COLUMN collected_date VARCHAR(30)"))
+            except Exception:
+                pass
+
+        await conn.run_sync(_check_and_add_columns)
 
 
 async def get_db() -> AsyncGenerator[AsyncSession, None]:

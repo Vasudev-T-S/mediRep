@@ -179,3 +179,61 @@ export interface SampleReport {
   description: string;
   text: string;
 }
+
+// ── User Authentication & Past Records ────────────────────────────────────────
+
+export interface User {
+  id: string;
+  email: string;
+  full_name: string;
+  age?: number | null;
+  gender?: string | null;
+  created_at: string;
+}
+
+export interface TokenResponse {
+  access_token: string;
+  token_type: string;
+  user: User;
+}
+
+export interface PastRecordFinding {
+  name: string;
+  metric_name?: string | null;
+  value?: number | null;
+  unit?: string | null;
+  reference_range?: string | null;
+  status: FindingStatus | string;
+  explanation?: string;
+}
+
+export interface PastRecord {
+  id: string;
+  user_id: string;
+  report_id?: string | null;
+  date: string;
+  title: string;
+  doctor_notes?: string | null;
+  report_type: string;
+  findings: PastRecordFinding[];
+  summary?: string | null;
+  created_at: string;
+}
+
+export interface PastRecordCreate {
+  date: string;
+  title: string;
+  doctor_notes?: string;
+  report_type?: string;
+  findings?: PastRecordFinding[];
+  summary?: string;
+  report_id?: string;
+}
+
+export interface PastRecordUpdate {
+  date?: string;
+  title?: string;
+  doctor_notes?: string;
+  findings?: PastRecordFinding[];
+  summary?: string;
+}

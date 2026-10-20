@@ -5,21 +5,26 @@ import { ProgressCard } from "./components/ProgressCard";
 import { ResultsDashboard } from "./components/ResultsDashboard";
 import { TrendTracker, DEFAULT_JOURNEY, STORAGE_KEY } from "./components/TrendTracker";
 import type { HistoricalReport } from "./components/TrendTracker";
-import { buildHistoryFromAnalysis } from "./utils/historyParser";
+import { PastRecordsView } from "./components/PastRecordsView";
+import { AuthModal } from "./components/AuthModal";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import { buildHistoryFromAnalysis, pastRecordToHistoricalReport } from "./utils/historyParser";
 import {
   getHealth,
   submitReport,
   getReportStatus,
   getReportResult,
+  getPastRecords,
 } from "./api/client";
 import type {
   AnalysisResult,
   ReportStatusResponse,
 } from "./api/types";
 
-type ViewMode = "upload" | "progress" | "results" | "trends";
+type ViewMode = "upload" | "progress" | "results" | "trends" | "records";
 
-export default function App() {
+function MainContent() {
+  const { user, isAuthenticated } = useAuth();
   const [backendConnected, setBackendConnected] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("upload");
 
@@ -54,6 +59,24 @@ export default function App() {
       .catch(() => setBackendConnected(false));
   }, []);
 
+  // When user authenticates, load their persistent database records into history!
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      getPastRecords()
+        .then((dbRecords) => {
+          if (dbRecords && dbRecords.length > 0) {
+            const mapped = dbRecords.map(pastRecordToHistoricalReport);
+            // Sort chronologically
+            mapped.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+            setHistory(mapped);
+          }
+        })
+        .catch((err) => {
+          console.warn("Could not fetch user records:", err);
+        });
+    }
+  }, [isAuthenticated, user?.id]);
+
   // Cleanup polling interval on unmount
   useEffect(() => {
     return () => {
@@ -73,18 +96,14 @@ export default function App() {
       setHistory((prev) => {
         let updated: HistoricalReport[];
         if (extracted.length > 1) {
-          // If the document contains multi-report data (e.g. past 20 reports),
-          // prioritize the uploaded dataset over the sample mock dataset!
           updated = [...extracted];
         } else {
-          // Single report upload: overwrite any record with the same ID or same date
           const single = extracted[0];
           const filtered = prev.filter(
             (r) => r.id !== single.id && r.date !== single.date
           );
           updated = [...filtered, single];
         }
-        // Keep sorted chronologically by date
         updated.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
         localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
         return updated;
@@ -109,6 +128,18 @@ export default function App() {
           const res = await getReportResult(id);
           setResult(res);
           recordToHistory(res);
+
+          // If logged in, re-fetch records to include auto-generated PastRecord
+          if (isAuthenticated) {
+            getPastRecords().then((dbRecords) => {
+              if (dbRecords && dbRecords.length > 0) {
+                const mapped = dbRecords.map(pastRecordToHistoricalReport);
+                mapped.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+                setHistory(mapped);
+              }
+            }).catch(() => {});
+          }
+
           setViewMode("results");
         } else if (st.status === "failed") {
           if (pollIntervalRef.current) window.clearInterval(pollIntervalRef.current);
@@ -142,15 +173,17 @@ export default function App() {
     setViewMode("upload");
   };
 
-  const handleViewChange = (mode: "upload" | "trends") => {
+  const handleViewChange = (mode: "upload" | "trends" | "records") => {
     if (mode === "upload") {
       if (result) {
         setViewMode("results");
       } else {
         setViewMode("upload");
       }
-    } else {
+    } else if (mode === "trends") {
       setViewMode("trends");
+    } else if (mode === "records") {
+      setViewMode("records");
     }
   };
 
@@ -170,7 +203,7 @@ export default function App() {
       />
 
       {/* Main View Container */}
-      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 z-10">
+      <main className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 z-10 w-full max-w-7xl mx-auto">
         {viewMode === "upload" && (
           <UploadCard
             onFileSelected={handleFileSelected}
@@ -206,12 +239,33 @@ export default function App() {
             initialParam={selectedTrendParam}
           />
         )}
+
+        {viewMode === "records" && (
+          <PastRecordsView
+            onAnalyzeNewReport={handleReset}
+            onViewTrend={(param) => {
+              if (param) setSelectedTrendParam(param);
+              setViewMode("trends");
+            }}
+          />
+        )}
       </main>
+
+      {/* Auth Modal (Sign In / Register / Demo) */}
+      <AuthModal />
 
       {/* Footer */}
       <footer className="w-full py-6 text-center text-xs text-[#738094] border-t border-white/5 backdrop-blur-md z-10">
         <p>Medical Report Analyzer © 2026 · Educational & Informational Tool</p>
       </footer>
     </div>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <MainContent />
+    </AuthProvider>
   );
 }
