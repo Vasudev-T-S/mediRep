@@ -21,198 +21,266 @@ export interface HistoricalReport {
   findings: Finding[];
 }
 
-// Pre-seeded multi-month clinical journey for instant demonstration
+// Pre-seeded 20-report multi-month clinical journey for comprehensive demonstration
 const DEFAULT_JOURNEY: HistoricalReport[] = [
   {
-    id: "rep-jan-2026",
-    date: "2026-01-15",
-    title: "Routine Checkup (Baseline)",
-    doctorNotes: "Initial checkup noting fatigue and elevated fasting glucose. Recommended iron-rich diet and low-glycemic foods.",
+    id: "rep-01",
+    date: "2025-01-10",
+    title: "Report #1: Initial Diagnosis (Baseline)",
+    doctorNotes: "Initial checkup with severe hyperglycemia and fatigue. Diet counseling initiated.",
     findings: [
-      {
-        name: "Hemoglobin",
-        value: 10.2,
-        unit: "g/dL",
-        reference_range: "12.0 - 15.5 g/dL",
-        status: "low",
-        explanation: "Hemoglobin was notably below normal range (10.2 g/dL), indicating moderate microcytic anemia.",
-      },
-      {
-        name: "Fasting Glucose",
-        value: 132.0,
-        unit: "mg/dL",
-        reference_range: "70 - 99 mg/dL",
-        status: "high",
-        explanation: "Fasting glucose was significantly elevated at 132 mg/dL.",
-      },
-      {
-        name: "HbA1c",
-        value: 8.4,
-        unit: "%",
-        reference_range: "4.0 - 5.6 %",
-        status: "high",
-        explanation: "HbA1c was elevated at 8.4%, indicating prolonged hyperglycemia over prior 3 months.",
-      },
-      {
-        name: "Postprandial Glucose",
-        value: 198.0,
-        unit: "mg/dL",
-        reference_range: "70 - 140 mg/dL",
-        status: "high",
-        explanation: "Postprandial 2-hour blood sugar was elevated at 198 mg/dL.",
-      },
-      {
-        name: "Total Cholesterol",
-        value: 238.0,
-        unit: "mg/dL",
-        reference_range: "125 - 200 mg/dL",
-        status: "high",
-        explanation: "Total cholesterol was elevated.",
-      },
-      {
-        name: "WBC",
-        value: 7.2,
-        unit: "K/uL",
-        reference_range: "4.5 - 11.0 K/uL",
-        status: "normal",
-        explanation: "WBC is normal.",
-      },
-      {
-        name: "Platelets",
-        value: 240.0,
-        unit: "K/uL",
-        reference_range: "150 - 450 K/uL",
-        status: "normal",
-        explanation: "Platelets normal.",
-      },
+      { name: "Fasting Glucose", value: 178.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose markedly elevated at 178 mg/dL." },
+      { name: "HbA1c", value: 9.4, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c substantially elevated at 9.4% (poor glycemic control)." },
+      { name: "Postprandial Glucose", value: 245.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial sugar was 245 mg/dL." },
+      { name: "Total Cholesterol", value: 240.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
     ],
   },
   {
-    id: "rep-may-2026",
-    date: "2026-05-20",
-    title: "4-Month Follow-Up Panel",
-    doctorNotes: "Follow-up after lifestyle adjustments. Hemoglobin improved with dietary iron; glucose and HbA1c showing significant response.",
+    id: "rep-02",
+    date: "2025-02-12",
+    title: "Report #2: Metformin Initiation",
+    doctorNotes: "Initiated Metformin 500 mg daily with dinner.",
     findings: [
-      {
-        name: "Hemoglobin",
-        value: 11.4,
-        unit: "g/dL",
-        reference_range: "12.0 - 15.5 g/dL",
-        status: "low",
-        explanation: "Hemoglobin improved by +1.2 g/dL, moving closer to reference threshold.",
-      },
-      {
-        name: "Fasting Glucose",
-        value: 115.0,
-        unit: "mg/dL",
-        reference_range: "70 - 99 mg/dL",
-        status: "high",
-        explanation: "Fasting blood sugar dropped from 132 to 115 mg/dL.",
-      },
-      {
-        name: "HbA1c",
-        value: 7.1,
-        unit: "%",
-        reference_range: "4.0 - 5.6 %",
-        status: "high",
-        explanation: "HbA1c improved notably from 8.4% to 7.1% (-1.3%).",
-      },
-      {
-        name: "Postprandial Glucose",
-        value: 154.0,
-        unit: "mg/dL",
-        reference_range: "70 - 140 mg/dL",
-        status: "high",
-        explanation: "Postprandial glucose improved from 198 to 154 mg/dL.",
-      },
-      {
-        name: "Total Cholesterol",
-        value: 218.0,
-        unit: "mg/dL",
-        reference_range: "125 - 200 mg/dL",
-        status: "high",
-        explanation: "Cholesterol decreased slightly.",
-      },
-      {
-        name: "WBC",
-        value: 6.9,
-        unit: "K/uL",
-        reference_range: "4.5 - 11.0 K/uL",
-        status: "normal",
-        explanation: "WBC remains stable.",
-      },
-      {
-        name: "Platelets",
-        value: 248.0,
-        unit: "K/uL",
-        reference_range: "150 - 450 K/uL",
-        status: "normal",
-        explanation: "Platelets normal.",
-      },
+      { name: "Fasting Glucose", value: 172.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 172 mg/dL." },
+      { name: "HbA1c", value: 9.2, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c remains high at 9.2%." },
+      { name: "Postprandial Glucose", value: 238.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 238 mg/dL." },
+      { name: "Total Cholesterol", value: 235.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
     ],
   },
   {
-    id: "rep-oct-2026",
-    date: "2026-10-18",
-    title: "Recent Comprehensive Lab Report",
-    doctorNotes: "Hemoglobin reached 13.8 g/dL (fully normalized). Fasting glucose down to 96 mg/dL, HbA1c fully normalized at 5.5%.",
+    id: "rep-03",
+    date: "2025-03-15",
+    title: "Report #3: Early Response",
+    doctorNotes: "Tolerating metformin without gastrointestinal issues.",
     findings: [
-      {
-        name: "Hemoglobin",
-        value: 13.8,
-        unit: "g/dL",
-        reference_range: "12.0 - 15.5 g/dL",
-        status: "normal",
-        explanation: "Hemoglobin has normalized inside the healthy 12.0 - 15.5 g/dL range.",
-      },
-      {
-        name: "Fasting Glucose",
-        value: 96.0,
-        unit: "mg/dL",
-        reference_range: "70 - 99 mg/dL",
-        status: "normal",
-        explanation: "Fasting glucose has fully normalized within target range.",
-      },
-      {
-        name: "HbA1c",
-        value: 5.5,
-        unit: "%",
-        reference_range: "4.0 - 5.6 %",
-        status: "normal",
-        explanation: "HbA1c normalized inside the healthy 4.0 - 5.6% reference range.",
-      },
-      {
-        name: "Postprandial Glucose",
-        value: 128.0,
-        unit: "mg/dL",
-        reference_range: "70 - 140 mg/dL",
-        status: "normal",
-        explanation: "Postprandial glucose normalized inside healthy limits (128 mg/dL).",
-      },
-      {
-        name: "Total Cholesterol",
-        value: 195.0,
-        unit: "mg/dL",
-        reference_range: "125 - 200 mg/dL",
-        status: "normal",
-        explanation: "Cholesterol normalized under 200 mg/dL.",
-      },
-      {
-        name: "WBC",
-        value: 6.8,
-        unit: "K/uL",
-        reference_range: "4.5 - 11.0 K/uL",
-        status: "normal",
-        explanation: "WBC normal.",
-      },
-      {
-        name: "Platelets",
-        value: 250.0,
-        unit: "K/uL",
-        reference_range: "150 - 450 K/uL",
-        status: "normal",
-        explanation: "Platelets normal.",
-      },
+      { name: "Fasting Glucose", value: 165.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose decreased to 165 mg/dL." },
+      { name: "HbA1c", value: 8.9, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c dropped to 8.9%." },
+      { name: "Postprandial Glucose", value: 226.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose decreased to 226 mg/dL." },
+      { name: "Total Cholesterol", value: 230.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-04",
+    date: "2025-04-18",
+    title: "Report #4: 3-Month Comprehensive Check",
+    doctorNotes: "HbA1c down -0.9%. Titrated Metformin to 500 mg twice daily.",
+    findings: [
+      { name: "Fasting Glucose", value: 158.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose down to 158 mg/dL." },
+      { name: "HbA1c", value: 8.5, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c improved to 8.5%." },
+      { name: "Postprandial Glucose", value: 215.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose down to 215 mg/dL." },
+      { name: "Total Cholesterol", value: 228.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-05",
+    date: "2025-05-20",
+    title: "Report #5: Dose Titration Follow-Up",
+    doctorNotes: "Positive response to BID dosing; fatigue improving.",
+    findings: [
+      { name: "Fasting Glucose", value: 154.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose at 154 mg/dL." },
+      { name: "HbA1c", value: 8.2, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c improved to 8.2%." },
+      { name: "Postprandial Glucose", value: 208.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose at 208 mg/dL." },
+      { name: "Total Cholesterol", value: 224.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-06",
+    date: "2025-06-22",
+    title: "Report #6: Lifestyle Integration",
+    doctorNotes: "Started structured 30-minute daily morning walking routine.",
+    findings: [
+      { name: "Fasting Glucose", value: 149.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose broke below 150 to 149 mg/dL." },
+      { name: "HbA1c", value: 8.0, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c down to 8.0%." },
+      { name: "Postprandial Glucose", value: 202.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 202 mg/dL." },
+      { name: "Total Cholesterol", value: 220.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-07",
+    date: "2025-07-25",
+    title: "Report #7: Mid-Year Follow-Up",
+    doctorNotes: "Postprandial sugar now drops below 200 mg/dL threshold.",
+    findings: [
+      { name: "Fasting Glucose", value: 145.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 145 mg/dL." },
+      { name: "HbA1c", value: 7.8, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c decreased to 7.8%." },
+      { name: "Postprandial Glucose", value: 195.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose reached 195 mg/dL." },
+      { name: "Total Cholesterol", value: 218.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-08",
+    date: "2025-08-28",
+    title: "Report #8: Weight Loss Milestone",
+    doctorNotes: "Body weight reduced by 3.2 kg; patient feeling energetic.",
+    findings: [
+      { name: "Fasting Glucose", value: 142.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 142 mg/dL." },
+      { name: "HbA1c", value: 7.6, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c dropped to 7.6%." },
+      { name: "Postprandial Glucose", value: 190.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose at 190 mg/dL." },
+      { name: "Total Cholesterol", value: 215.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-09",
+    date: "2025-09-30",
+    title: "Report #9: 9-Month Evaluation",
+    doctorNotes: "Blood pressure also normalized at 126/82 mmHg.",
+    findings: [
+      { name: "Fasting Glucose", value: 139.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 139 mg/dL." },
+      { name: "HbA1c", value: 7.5, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c down to 7.5%." },
+      { name: "Postprandial Glucose", value: 186.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 186 mg/dL." },
+      { name: "Total Cholesterol", value: 212.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-10",
+    date: "2025-11-05",
+    title: "Report #10: Holiday Seasonal Follow-Up",
+    doctorNotes: "Minor transient rise due to festive dietary intake.",
+    findings: [
+      { name: "Fasting Glucose", value: 144.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose slight rise to 144 mg/dL." },
+      { name: "HbA1c", value: 7.7, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c slight uptick to 7.7%." },
+      { name: "Postprandial Glucose", value: 194.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose was 194 mg/dL." },
+      { name: "Total Cholesterol", value: 216.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-11",
+    date: "2025-12-15",
+    title: "Report #11: Dietary Re-Alignment",
+    doctorNotes: "Resumed strict carbohydrate moderation.",
+    findings: [
+      { name: "Fasting Glucose", value: 140.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose back down to 140 mg/dL." },
+      { name: "HbA1c", value: 7.5, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c returned to 7.5%." },
+      { name: "Postprandial Glucose", value: 188.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 188 mg/dL." },
+      { name: "Total Cholesterol", value: 210.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-12",
+    date: "2026-01-18",
+    title: "Report #12: 1-Year Milestone",
+    doctorNotes: "1-year anniversary of diagnosis. Overall HbA1c reduced by -2.1% from baseline.",
+    findings: [
+      { name: "Fasting Glucose", value: 136.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose at 136 mg/dL." },
+      { name: "HbA1c", value: 7.3, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c dropped to 7.3%." },
+      { name: "Postprandial Glucose", value: 182.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 182 mg/dL." },
+      { name: "Total Cholesterol", value: 206.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-13",
+    date: "2026-02-20",
+    title: "Report #13: Metabolic Consolidation",
+    doctorNotes: "Renal and hepatic panels confirm good safety profile.",
+    findings: [
+      { name: "Fasting Glucose", value: 133.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 133 mg/dL." },
+      { name: "HbA1c", value: 7.2, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c reached 7.2%." },
+      { name: "Postprandial Glucose", value: 178.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 178 mg/dL." },
+      { name: "Total Cholesterol", value: 204.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol elevated." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-14",
+    date: "2026-03-25",
+    title: "Report #14: Approaching ADA Target",
+    doctorNotes: "HbA1c hits 7.0%, the standard clinical benchmark.",
+    findings: [
+      { name: "Fasting Glucose", value: 130.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 130 mg/dL." },
+      { name: "HbA1c", value: 7.0, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c reaches benchmark 7.0%." },
+      { name: "Postprandial Glucose", value: 174.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 174 mg/dL." },
+      { name: "Total Cholesterol", value: 202.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "high", explanation: "Cholesterol near normal." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-15",
+    date: "2026-04-28",
+    title: "Report #15: Sub-7% HbA1c Achievement",
+    doctorNotes: "First milestone where HbA1c drops under 7.0%.",
+    findings: [
+      { name: "Fasting Glucose", value: 128.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 128 mg/dL." },
+      { name: "HbA1c", value: 6.9, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c drops to 6.9%." },
+      { name: "Postprandial Glucose", value: 170.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 170 mg/dL." },
+      { name: "Total Cholesterol", value: 199.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "normal", explanation: "Cholesterol normalized." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-16",
+    date: "2026-05-30",
+    title: "Report #16: Glycemic Stabilization",
+    doctorNotes: "Excellent adherence. Fasting sugars consistently < 130 mg/dL.",
+    findings: [
+      { name: "Fasting Glucose", value: 126.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 126 mg/dL." },
+      { name: "HbA1c", value: 6.8, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c improved to 6.8%." },
+      { name: "Postprandial Glucose", value: 167.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 167 mg/dL." },
+      { name: "Total Cholesterol", value: 197.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "normal", explanation: "Cholesterol normal." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-17",
+    date: "2026-07-05",
+    title: "Report #17: Mid-Year Checkup",
+    doctorNotes: "Incorporated light resistance training; insulin sensitivity improved.",
+    findings: [
+      { name: "Fasting Glucose", value: 125.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 125 mg/dL." },
+      { name: "HbA1c", value: 6.8, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c maintained at 6.8%." },
+      { name: "Postprandial Glucose", value: 165.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 165 mg/dL." },
+      { name: "Total Cholesterol", value: 196.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "normal", explanation: "Cholesterol normal." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-18",
+    date: "2026-08-12",
+    title: "Report #18: Late Summer Panel",
+    doctorNotes: "Lipid profile also normalized; triglycerides decreased.",
+    findings: [
+      { name: "Fasting Glucose", value: 123.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 123 mg/dL." },
+      { name: "HbA1c", value: 6.7, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c reached 6.7%." },
+      { name: "Postprandial Glucose", value: 163.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 163 mg/dL." },
+      { name: "Total Cholesterol", value: 195.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "normal", explanation: "Cholesterol normal." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-19",
+    date: "2026-09-18",
+    title: "Report #19: Pre-Evaluation Follow-Up",
+    doctorNotes: "Glycemic parameters stable ahead of comprehensive annual evaluation.",
+    findings: [
+      { name: "Fasting Glucose", value: 125.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose is 125 mg/dL." },
+      { name: "HbA1c", value: 6.7, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c steady at 6.7%." },
+      { name: "Postprandial Glucose", value: 164.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 164 mg/dL." },
+      { name: "Total Cholesterol", value: 195.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "normal", explanation: "Cholesterol normal." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine normal." },
+    ],
+  },
+  {
+    id: "rep-20",
+    date: "2026-10-19",
+    title: "Report #20: Current Comprehensive Status",
+    doctorNotes: "Exceptional 22-month trajectory. Overall HbA1c reduced from 9.4% to 6.7% (-2.7% total drop).",
+    findings: [
+      { name: "Fasting Glucose", value: 124.0, unit: "mg/dL", reference_range: "70 - 99 mg/dL", status: "high", explanation: "Fasting glucose current value is 124 mg/dL." },
+      { name: "HbA1c", value: 6.7, unit: "%", reference_range: "4.0 - 5.6 %", status: "high", explanation: "HbA1c maintained in target at 6.7%." },
+      { name: "Postprandial Glucose", value: 162.0, unit: "mg/dL", reference_range: "70 - 140 mg/dL", status: "high", explanation: "Postprandial glucose is 162 mg/dL." },
+      { name: "Total Cholesterol", value: 195.0, unit: "mg/dL", reference_range: "125 - 200 mg/dL", status: "normal", explanation: "Total cholesterol is normal." },
+      { name: "Serum Creatinine", value: 0.9, unit: "mg/dL", reference_range: "0.6 - 1.2 mg/dL", status: "normal", explanation: "Creatinine is normal." },
     ],
   },
 ];
@@ -225,7 +293,7 @@ interface TrendTrackerProps {
 
 export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }) => {
   const [history, setHistory] = useState<HistoricalReport[]>([]);
-  const [selectedParam, setSelectedParam] = useState<string>("Hemoglobin");
+  const [selectedParam, setSelectedParam] = useState<string>("Fasting Glucose");
   const [hoveredPoint, setHoveredPoint] = useState<number | null>(null);
 
   // Load history from localStorage or pre-seed
@@ -234,7 +302,7 @@ export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }
       const stored = localStorage.getItem(STORAGE_KEY);
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (Array.isArray(parsed) && parsed.length > 0) {
+        if (Array.isArray(parsed) && parsed.length >= DEFAULT_JOURNEY.length) {
           setHistory(parsed);
           return;
         }
@@ -305,9 +373,9 @@ export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }
   const chartMin = Math.max(0, minValue - padding);
   const chartMax = maxValue + padding;
 
-  const chartWidth = 600;
-  const chartHeight = 220;
-  const margin = { top: 20, right: 30, bottom: 40, left: 50 };
+  const chartWidth = Math.max(750, series.length * 64);
+  const chartHeight = 230;
+  const margin = { top: 25, right: 35, bottom: 45, left: 55 };
   const innerWidth = chartWidth - margin.left - margin.right;
   const innerHeight = chartHeight - margin.top - margin.bottom;
 
@@ -482,10 +550,11 @@ export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }
           </div>
         ) : (
           <div className="relative w-full overflow-x-auto bg-[#080f11]/50 p-4 rounded-2xl border border-white/5">
-            <svg
-              viewBox={`0 0 ${chartWidth} ${chartHeight}`}
-              className="w-full h-64 overflow-visible"
-            >
+            <div style={{ minWidth: `${chartWidth}px` }}>
+              <svg
+                viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                className="w-full h-64 overflow-visible"
+              >
               <defs>
                 {/* Reference Range Zone Gradient */}
                 <linearGradient id="refBandGrad" x1="0" y1="0" x2="0" y2="1">
@@ -665,6 +734,7 @@ export const TrendTracker: React.FC<TrendTrackerProps> = ({ onAnalyzeNewReport }
                 );
               })}
             </svg>
+            </div>
 
             {/* Hover Tooltip Box */}
             {hoveredPoint !== null && series[hoveredPoint] && (
