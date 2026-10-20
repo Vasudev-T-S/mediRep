@@ -1,0 +1,89 @@
+==============================================================
+               METROPOLITAN ENDOCRINE & DIABETES CLINIC
+   742 Medical Center Blvd, Suite 400 | Phone: +1 (555) 019-2834
+==============================================================
+                DIABETES & GLYCEMIC MONITORING REPORT
+                 *** PATIENT COMPREHENSIVE LAB PANEL ***
+
+Patient Name: Robert M. Davis | Age: 48 Years | Gender: Male
+Report ID   : GLU-2026-09842  | Collected On: 19-Oct-2026 08:15 AM
+Patient ID  : PID-40892       | Reported On : 19-Oct-2026 01:45 PM
+Referred By : Dr. Sarah Vance, MD | Sample Type : Venous Blood, Plasma
+Diagnosis   : Type 2 Diabetes Mellitus | Fasting Status: Fasting (10 Hours)
+
+--------------------------------------------------------------
+CLINICAL NOTES & PATIENT HISTORY
+--------------------------------------------------------------
+Chief Complaint: Scheduled 3-month follow-up for type 2 diabetes monitoring.
+Past Medical History: Diagnosed with type 2 diabetes mellitus 9 months ago.
+Mild hypertension and dyslipidemia. Currently treated with Metformin 500 mg
+twice daily with meals.
+Review of Systems: Patient reports adhering strictly to medication regimen and
+walking 30 minutes daily. Denies symptoms of hypoglycemia (no diaphoresis,
+shakiness, or dizziness), and denies polyuria or polydipsia.
+
+--------------------------------------------------------------
+CURRENT GLYCEMIC & METABOLIC PANEL
+--------------------------------------------------------------
+Test: Value Unit (Reference Range: Low - High Unit)
+Fasting Blood Glucose: 124 mg/dL (Reference Range: 70 - 99 mg/dL)
+Postprandial Glucose: 162 mg/dL (Reference Range: 70 - 140 mg/dL)
+HbA1c: 6.7 % (Reference Range: 4.0 - 5.6 %)
+Estimated Average Glucose: 146 mg/dL (Reference Range: 70 - 126 mg/dL)
+Serum Creatinine: 0.9 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)
+Blood Urea Nitrogen: 15 mg/dL (Reference Range: 7 - 20 mg/dL)
+Total Cholesterol: 195 mg/dL (Reference Range: 125 - 200 mg/dL)
+Triglycerides: 165 mg/dL (Reference Range: 0 - 150 mg/dL)
+HDL Cholesterol: 42 mg/dL (Reference Range: 40 - 60 mg/dL)
+LDL Cholesterol: 120 mg/dL (Reference Range: 0 - 100 mg/dL)
+
+--------------------------------------------------------------
+HISTORICAL BLOOD REPORT COMPARISON (PAST BLOOD SUGAR READINGS)
+--------------------------------------------------------------
+Longitudinal Glycemic Tracking across past consultations:
+
+1. BASELINE REPORT (6 Months Ago - 18-Apr-2026):
+   - Fasting Blood Glucose: 158 mg/dL [Markedly Elevated]
+   - Postprandial Glucose: 215 mg/dL [Markedly Elevated]
+   - HbA1c: 8.5 % [Suboptimal Control, > 8.0%]
+   - Clinical Action: Initiated Metformin 500mg BID and nutritional therapy.
+
+2. FOLLOW-UP REPORT (3 Months Ago - 15-Jul-2026):
+   - Fasting Blood Glucose: 138 mg/dL [Elevated]
+   - Postprandial Glucose: 184 mg/dL [Elevated]
+   - HbA1c: 7.4 % [Moderate Control]
+   - Clinical Action: Reinforced low-glycemic dietary adherence and exercise.
+
+3. CURRENT REPORT (Today - 19-Oct-2026):
+   - Fasting Blood Glucose: 124 mg/dL [Improved, -14 mg/dL from prior]
+   - Postprandial Glucose: 162 mg/dL [Improved, -22 mg/dL from prior]
+   - HbA1c: 6.7 % [Target Approached, -0.7% from prior, -1.8% total reduction]
+   - Clinical Action: Glycemic trajectory demonstrates sustained positive response.
+
+--------------------------------------------------------------
+CLINICAL IMPRESSION & SUMMARY
+--------------------------------------------------------------
+1. Demonstrated progressive, significant improvement in glycemic control over the
+   past 6 months, reflected by an overall HbA1c reduction from 8.5% to 6.7%.
+2. Patient is approaching the standard American Diabetes Association (ADA) target
+   of HbA1c < 7.0% for non-pregnant adults.
+3. Mild fasting hyperglycemia (124 mg/dL) and mild postprandial elevation (162 mg/dL)
+   persist, but show substantial downward momentum compared to past reports.
+4. Renal parameters (Creatinine 0.9 mg/dL, BUN 15 mg/dL) are fully stable and within
+   normal limits, confirming safety to continue standard metformin therapy.
+5. Mild hypertriglyceridemia (165 mg/dL) and borderline LDL (120 mg/dL) warrant
+   continued cardiovascular risk awareness.
+
+--------------------------------------------------------------
+PHYSICIAN RECOMMENDATIONS
+--------------------------------------------------------------
+- Medication: Continue Metformin 500 mg orally twice daily with meals.
+- Diet: Maintain balanced carbohydrate distribution; limit sweetened beverages
+  and refined starches; emphasize fiber-rich vegetables and lean proteins.
+- Physical Activity: Continue at least 150 minutes per week of moderate-intensity
+  aerobic exercise (e.g., brisk walking) combined with light resistance training.
+- Monitoring: Perform self-monitoring of blood glucose (SMBG) 2-3 times per week,
+  alternating fasting and 2-hour postprandial checks.
+- Follow-up: Schedule repeat HbA1c, lipid panel, and urine microalbumin check in
+  3 months. Annual dilated eye exam and diabetic foot inspection advised.
+==============================================================

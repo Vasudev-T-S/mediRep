@@ -20,6 +20,7 @@ import {
   Clock,
   Sparkles,
   Layers,
+  TrendingUp,
 } from "lucide-react";
 import type { AnalysisResult, FindingStatus } from "../api/types";
 import { submitFeedback } from "../api/client";
@@ -27,6 +28,7 @@ import { submitFeedback } from "../api/client";
 interface ResultsDashboardProps {
   result: AnalysisResult;
   onNewAnalysis: () => void;
+  onViewTrends?: () => void;
 }
 
 type TabType = "all" | "findings" | "entities" | "text";
@@ -34,6 +36,7 @@ type TabType = "all" | "findings" | "entities" | "text";
 export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
   result,
   onNewAnalysis,
+  onViewTrends,
 }) => {
   const [activeTab, setActiveTab] = useState<TabType>("all");
   const [activeFindingFilter, setActiveFindingFilter] = useState<
@@ -190,6 +193,17 @@ export const ResultsDashboard: React.FC<ResultsDashboardProps> = ({
           </div>
 
           <div className="flex items-center gap-3 w-full sm:w-auto print:hidden">
+            {onViewTrends && (
+              <button
+                type="button"
+                onClick={onViewTrends}
+                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#619BD0]/20 via-[#AFACD0]/20 to-[#FE9458]/20 hover:from-[#619BD0]/30 hover:to-[#AFACD0]/30 border border-[#619BD0]/40 text-xs font-bold text-white transition-all cursor-pointer shadow-md"
+              >
+                <TrendingUp className="w-4 h-4 text-[#FE9458]" />
+                <span>View Longitudinal Trends</span>
+              </button>
+            )}
+
             <button
               type="button"
               onClick={() => window.print()}

@@ -197,6 +197,34 @@ async def get_sample_reports():
                 "AST: 28 U/L (Reference Range: 10 - 40 U/L)\n"
             ),
         },
+        {
+            "id": "sample_blood_sugar_history",
+            "title": "Diabetes Glycemic Panel & Past Blood Reports",
+            "category": "Endocrine & Diabetes",
+            "badge": "Blood Sugar History",
+            "description": "Fasting Glucose, HbA1c, Postprandial Glucose, and 6-month historical glycemic trend comparison.",
+            "text": (
+                "DIABETES & GLYCEMIC MONITORING REPORT\n"
+                "Patient: Robert Davis | Age: 48 | Sex: Male\n"
+                "History: Type 2 Diabetes Mellitus managed with Metformin 500mg BID.\n\n"
+                "CURRENT GLYCEMIC & METABOLIC PANEL:\n"
+                "Fasting Blood Glucose: 124 mg/dL (Reference Range: 70 - 99 mg/dL)\n"
+                "Postprandial Glucose: 162 mg/dL (Reference Range: 70 - 140 mg/dL)\n"
+                "HbA1c: 6.7 % (Reference Range: 4.0 - 5.6 %)\n"
+                "Estimated Average Glucose: 146 mg/dL (Reference Range: 70 - 126 mg/dL)\n"
+                "Serum Creatinine: 0.9 mg/dL (Reference Range: 0.6 - 1.2 mg/dL)\n"
+                "Blood Urea Nitrogen: 15 mg/dL (Reference Range: 7 - 20 mg/dL)\n"
+                "Total Cholesterol: 195 mg/dL (Reference Range: 125 - 200 mg/dL)\n"
+                "Triglycerides: 165 mg/dL (Reference Range: 0 - 150 mg/dL)\n\n"
+                "HISTORICAL COMPARISON WITH PAST BLOOD REPORTS:\n"
+                "- 6 Months Ago (18-Apr-2026): Fasting Glucose: 158 mg/dL | HbA1c: 8.5% | PPBS: 215 mg/dL (Baseline)\n"
+                "- 3 Months Ago (15-Jul-2026): Fasting Glucose: 138 mg/dL | HbA1c: 7.4% | PPBS: 184 mg/dL (Improved)\n"
+                "- Current (19-Oct-2026): Fasting Glucose: 124 mg/dL | HbA1c: 6.7% | PPBS: 162 mg/dL (Target Approached)\n\n"
+                "IMPRESSION:\n"
+                "Demonstrated progressive improvement in glycemic control over the past 6 months (HbA1c -1.8%). "
+                "Mild fasting hyperglycemia remains. Continue metformin and lifestyle modifications.\n"
+            ),
+        },
     ]
 
 
